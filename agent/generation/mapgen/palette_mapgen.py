@@ -109,6 +109,28 @@ _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
         ("big_rock", "floor", 0.010),
         ("stalagmite", "floor", 0.015),
     ],
+    # 용암던전(tileset 4): 화산 바닥(lava_floor) 위에 바위 (용암 위엔 배치 안 됨)
+    "lava": [
+        ("rock", "lava_floor", 0.020),
+        ("big_rock", "lava_floor", 0.012),
+        ("stalagmite", "lava_floor", 0.012),
+    ],
+    # 얼음던전: 얼음동굴 바닥에 바위·종유석
+    "ice": [
+        ("pebbles", "ice_floor", 0.025),
+        ("rock", "ice_floor", 0.015),
+        ("stalagmite", "ice_floor", 0.012),
+    ],
+    # 독던전: 일반 바닥에 바위
+    "poison": [
+        ("pebbles", "poison_floor", 0.025),
+        ("rock", "poison_floor", 0.015),
+    ],
+    # 모래/수정/이끼/어둠 던전: 각 테마 바닥에 바위
+    "sand": [("pebbles", "sand_floor", 0.025), ("rock", "sand_floor", 0.015)],
+    "crystal": [("pebbles", "crystal_floor", 0.020), ("rock", "crystal_floor", 0.012)],
+    "moss": [("pebbles", "moss_floor", 0.025), ("rock", "moss_floor", 0.015)],
+    "dark": [("pebbles", "dark_floor", 0.020), ("rock", "dark_floor", 0.015)],
     # 실내(tileset 3): 마루 위에 가구
     "interior": [
         ("chair", "floor", 0.030),
@@ -481,13 +503,66 @@ def generate_terrain_map(
     return data
 
 
+# 던전 테마 → (바닥, 풀, 오브젝트 바이옴). 풀 타일은 타일셋 그림으로 직접 확인한 것:
+#   용암 2240(A1, 암반테두리) / 얼음 2624(A1, 수정테두리) — 통행불가 물 해저드
+#   독 4304(A2, 보라 독장판) — damage 플래그, 통행가능(밟으면 데미지)
+# 테두리(가장자리)는 오토타일에 구워져 있어 apply_autotile 이 자동으로 그린다.
+# 풀의 통행 여부는 palette passable 플래그로 자동 결정(impassable_ids).
+_DUNGEON_THEMES: dict[str, dict[str, str]] = {
+    "lava": {"floor": "lava_floor", "pool": "lava", "objects": "lava"},
+    "ice": {"floor": "ice_floor", "pool": "ice_water", "objects": "ice"},
+    "poison": {"floor": "poison_floor", "pool": "poison_panel", "objects": "poison"},
+    "sand": {"floor": "sand_floor", "pool": "sand_water", "objects": "sand"},
+    "crystal": {"floor": "crystal_floor", "pool": "crystal_water", "objects": "crystal"},
+    "moss": {"floor": "moss_floor", "pool": "moss_water", "objects": "moss"},
+    "dark": {"floor": "dark_floor", "objects": "dark"},  # 풀 없음(어둠 바닥만)
+}
+
+
+def _place_pools(
+    data: list[int], w: int, h: int, rooms: list, floor_base: int, pool: int, rng: random.Random
+) -> None:
+    """방 내부에 테마 풀(용암/얼린물/독 등) 블롭을 둔다. 복도가 이후 뚫어 연결성 보장.
+
+    풀은 방 테두리에서 (반경+1)칸 안쪽에만 둬 바깥에 바닥 버퍼(→테두리)를 보장한다.
+    큰 방은 풀 2개까지.
+    """
+    for room in rooms:
+        # 용암 끝(cx±r)이 방 테두리 1칸 안쪽까지만 들어가도록 최대 반경 계산(바닥 버퍼 보장).
+        rmax = (min(room.width, room.height) - 3) // 2
+        if rmax < 1:  # 너무 작은 방은 용암 못 둠
+            continue
+        pools = 2 if (room.width >= 9 and room.height >= 9 and rng.random() < 0.5) else 1
+        for _ in range(pools):
+            if rng.random() > 0.7:
+                continue
+            r = rng.randint(1, min(2, rmax))
+            lo_x, hi_x = room.x + r + 1, room.x + room.width - 2 - r
+            lo_y, hi_y = room.y + r + 1, room.y + room.height - 2 - r
+            if lo_x > hi_x or lo_y > hi_y:
+                continue
+            cx, cy = rng.randint(lo_x, hi_x), rng.randint(lo_y, hi_y)
+            for y in range(cy - r, cy + r + 1):
+                for x in range(cx - r, cx + r + 1):
+                    if (x - cx) ** 2 + (y - cy) ** 2 <= r * r and (
+                        base_of(get_tile(data, x, y, w, h, 0)) == floor_base
+                    ):
+                        set_tile(data, x, y, w, h, 0, pool)
+
+
 def generate_dungeon_map(
-    dims: MapDims, seed: int = 0, objects: bool = True, variants: bool = True
+    dims: MapDims,
+    seed: int = 0,
+    objects: bool = True,
+    variants: bool = True,
+    theme: str = "dungeon",
 ) -> list[int]:
     """BSP 방-복도 던전 생성 (tileset 4). 방=바닥, 방 밖=검은 공백(void, 막힘).
 
     기존 dungeon_generator 의 BSP 분할을 재사용하고, 타일은 palette tileset 4 를 쓴다.
-    오브젝트(바위·종유석·얼음크리스탈)는 방 바닥 위에 배치. A4 벽 오토타일은 후속.
+    theme(_DUNGEON_THEMES): "lava"/"ice"/"poison" 이면 테마 바닥 + 풀(블롭) + 테두리로
+    테마 던전을 만든다(풀·테두리는 샘플맵 실측 매칭쌍). "dungeon"은 일반(풀 없음).
+    오브젝트는 방 바닥 위에 배치. A4 벽 오토타일은 후속.
     """
     from agent.generation.mapgen.dungeon_generator import (
         BSPNode,
@@ -498,7 +573,8 @@ def generate_dungeon_map(
 
     w, h = dims.width, dims.height
     s = seed or w * h
-    base_floor = pal.get_tile_id(4, "floor")
+    cfg = _DUNGEON_THEMES.get(theme)  # None 이면 일반 던전(풀 없음)
+    base_floor = pal.get_tile_id(4, cfg["floor"] if cfg else "floor")
     floor = _pick_variant(4, base_floor, random.Random(s + 7)) if variants else base_floor
     void = pal.get_tile_id(4, "void")
 
@@ -519,7 +595,11 @@ def generate_dungeon_map(
             for rx in range(room.x, min(room.x + room.width, w - 1)):
                 set_tile(data, rx, ry, w, h, 0, floor)
 
-    # 인접 방을 L자 복도로 연결
+    pool = pal.get_tile_id(4, cfg["pool"]) if cfg and "pool" in cfg else 0
+    if pool:  # 테마 풀을 복도보다 먼저 → 복도가 풀을 뚫어 연결성 보장
+        _place_pools(data, w, h, rooms, base_of(floor), pool, random.Random(s + 53))
+
+    # 인접 방을 L자 복도로 연결 (풀 위를 지나면 바닥으로 뚫어 길 확보)
     for i in range(len(rooms) - 1):
         x1, y1 = rooms[i].center
         x2, y2 = rooms[i + 1].center
@@ -528,12 +608,16 @@ def generate_dungeon_map(
         for y in range(min(y1, y2), max(y1, y2) + 1):
             set_tile(data, x2, y, w, h, 0, floor)
 
-    _set_passability_by_base(data, w, h, pal.impassable_ids(4))  # void 막힘
+    if pool:  # A1/A2 테마 풀의 가장자리(테두리) shape 를 오토타일이 자동으로 그림
+        apply_autotile(data, w, h, layer=0, oob_connected=False)
+
+    _set_passability_by_base(data, w, h, pal.impassable_ids(4))  # void·테마 물 막힘
 
     if objects:
+        biome = cfg["objects"] if cfg else "dungeon"
         rng = random.Random(s + 99)
-        _place_multitile(data, w, h, 4, "dungeon", rng)
-        _place_objects(data, w, h, 4, "dungeon", rng)
+        _place_multitile(data, w, h, 4, biome, rng)
+        _place_objects(data, w, h, 4, biome, rng)
     return data
 
 
@@ -762,9 +846,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument(
         "--mode",
-        choices=["town", "terrain", "dungeon", "interior", "sf_outside", "sf_interior"],
+        choices=[
+            "town", "terrain", "dungeon",
+            "lava_dungeon", "ice_dungeon", "poison_dungeon",
+            "sand_dungeon", "crystal_dungeon", "moss_dungeon", "dark_dungeon",
+            "interior", "sf_outside", "sf_interior",
+        ],
         default="town",
-        help="town/terrain/dungeon(t4)/interior(t3)/sf_outside(t5 도시)/sf_interior(t6)",
+        help="town/terrain/dungeon·{lava,ice,poison,sand,crystal,moss,dark}_dungeon(t4)/...",
     )
     parser.add_argument(
         "--biome",
@@ -797,15 +886,22 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    _MODE_TILESET = {"dungeon": 4, "interior": 3, "sf_outside": 5, "sf_interior": 6}
+    _dungeon_modes = {"dungeon": "dungeon", **{f"{t}_dungeon": t for t in _DUNGEON_THEMES}}
+    _MODE_TILESET = {
+        **{m: 4 for m in _dungeon_modes}, "interior": 3, "sf_outside": 5, "sf_interior": 6,
+    }
     if args.mode in _MODE_TILESET:
         args.tileset = _MODE_TILESET[args.mode]  # 모드별 tileset 고정 (렌더도 동일)
     dims = MapDims(width=args.width, height=args.height, tileset_id=args.tileset)
-    if args.mode == "dungeon":
+    if args.mode in _dungeon_modes:
         data = generate_dungeon_map(
-            dims, seed=args.seed, objects=not args.no_objects, variants=not args.no_variants
+            dims,
+            seed=args.seed,
+            objects=not args.no_objects,
+            variants=not args.no_variants,
+            theme=_dungeon_modes[args.mode],
         )
-        mode_label = "dungeon"
+        mode_label = args.mode
     elif args.mode == "interior":
         data = generate_interior_map(
             dims,

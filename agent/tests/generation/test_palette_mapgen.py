@@ -4,10 +4,13 @@
 오토타일 shape 보정이 적용되는지 확인.
 """
 
+import pytest
+
 from agent.generation.mapgen import palette as pal
 from agent.generation.mapgen.autotile import base_of, is_floor_autotile
 from agent.generation.mapgen.palette_mapgen import (
     _BIOMES,
+    _DUNGEON_THEMES,
     MapDims,
     generate_dungeon_map,
     generate_interior_map,
@@ -261,6 +264,36 @@ def test_dungeon_floor_and_void():
         for x in range(w):
             if get_tile(d, x, y, w, h, 0) == void:
                 assert get_tile(d, x, y, w, h, 5) == 1
+
+
+@pytest.mark.parametrize("theme", sorted(_DUNGEON_THEMES))
+def test_themed_dungeon(theme):
+    """테마 던전: 테마 바닥(+옵션 풀). 풀 테두리는 오토타일이 굽고, 풀은 void에 안 닿는다.
+
+    풀이 통행불가(용암·얼음·물)면 레이어5=1, 통행가능(독 장판)이면 0.
+    """
+    cfg = _DUNGEON_THEMES[theme]
+    d = generate_dungeon_map(MapDims(50, 40, 4), seed=5, theme=theme, variants=False)
+    w, h = 50, 40
+    floor = pal.get_tile_id(4, cfg["floor"])
+    void = pal.get_tile_id(4, "void")
+    bases = {base_of(get_tile(d, x, y, w, h, 0)) for y in range(h) for x in range(w)}
+    assert floor in bases  # 테마 바닥
+    if "pool" not in cfg:  # 어둠 등 풀 없는 테마
+        return
+    pool = pal.get_tile_id(4, cfg["pool"])
+    assert pool in bases  # 풀 존재
+    pool_blocks = pool in pal.impassable_ids(4)
+    for y in range(h):
+        for x in range(w):
+            if base_of(get_tile(d, x, y, w, h, 0)) != pool:
+                continue
+            assert get_tile(d, x, y, w, h, 5) == (1 if pool_blocks else 0)
+            for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < h:
+                    nb = base_of(get_tile(d, nx, ny, w, h, 0))
+                    assert nb != void, f"{theme}: 풀이 void(공백)에 접함"
 
 
 def test_dungeon_deterministic():

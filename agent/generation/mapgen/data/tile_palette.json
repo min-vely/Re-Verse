@@ -5,12 +5,30 @@
     "autotile_base": 2048,
     "shapes_per_kind": 48,
     "ranges": {
-      "A1": [2048, 2815],
-      "A2": [2816, 4351],
-      "A3": [4352, 5887],
-      "A4": [5888, 8191],
-      "A5": [1536, 2047],
-      "BCDE": [0, 1023]
+      "A1": [
+        2048,
+        2815
+      ],
+      "A2": [
+        2816,
+        4351
+      ],
+      "A3": [
+        4352,
+        5887
+      ],
+      "A4": [
+        5888,
+        8191
+      ],
+      "A5": [
+        1536,
+        2047
+      ],
+      "BCDE": [
+        0,
+        1023
+      ]
     },
     "_note": "base_id 는 오토타일 kind 의 shape=0 기준 ID. globalKind=(id-2048)//48, shape=(id-2048)%48. canonical: docs/rpgmaker/tile_rendering.md §3."
   },
@@ -21,8 +39,18 @@
       "verified": true,
       "_note": "월드맵(전체 지도). World_A1/A2. samplemaps 빈도 + flags 로 grass/water 검증. 추가 지형은 verify_palette --dump-usage 1 로 확장.",
       "terrain": {
-        "grass": { "base_id": 2816, "layer": 0, "passable": true, "note": "잔디(A2)" },
-        "water": { "base_id": 2048, "layer": 0, "passable": false, "note": "물(A1)" }
+        "grass": {
+          "base_id": 2816,
+          "layer": 0,
+          "passable": true,
+          "note": "잔디(A2)"
+        },
+        "water": {
+          "base_id": 2048,
+          "layer": 0,
+          "passable": false,
+          "note": "물(A1)"
+        }
       }
     },
     "2": {
@@ -31,28 +59,142 @@
       "verified": true,
       "_note": "마을·숲·사막 등 야외. 실제 마을 샘플맵 전부 tileset_id=2. Outside_A2.png(시트해석) + Tilesets.json flags + samplemaps 빈도로 검증한 핵심 지형. 나무/문/상점 등 오브젝트는 B/C 시트(0~1023)에 있어 후속 확장 대상.",
       "terrain": {
-        "grass": { "base_id": 2816, "layer": 0, "passable": true, "note": "초록 잔디 (시트 0,2)" },
-        "dirt": { "base_id": 3584, "layer": 0, "passable": true, "note": "갈색 흙바닥 (시트 0,4)" },
-        "sand": { "base_id": 3200, "layer": 0, "passable": true, "note": "모래 (시트 0,3)" },
-        "snow": { "base_id": 3968, "layer": 0, "passable": true, "note": "눈 (시트 0,5)" },
-        "gravel": { "base_id": 2912, "layer": 0, "passable": true, "note": "회색 자갈 (시트 2,2)" },
-        "stone_path": { "base_id": 2960, "layer": 0, "passable": true, "note": "회색 포장길 (시트 3,2)" },
-        "water": { "base_id": 2048, "layer": 0, "passable": false, "note": "물 (A1, flags 0x080F)" },
-        "wall": { "base_id": 3488, "layer": 1, "passable": false, "note": "회색 성벽/장애물 (시트 6,3, flags 0x0E0F)" }
+        "grass": {
+          "base_id": 2816,
+          "layer": 0,
+          "passable": true,
+          "note": "초록 잔디 (시트 0,2)"
+        },
+        "dirt": {
+          "base_id": 3584,
+          "layer": 0,
+          "passable": true,
+          "note": "갈색 흙바닥 (시트 0,4)"
+        },
+        "sand": {
+          "base_id": 3200,
+          "layer": 0,
+          "passable": true,
+          "note": "모래 (시트 0,3)"
+        },
+        "snow": {
+          "base_id": 3968,
+          "layer": 0,
+          "passable": true,
+          "note": "눈 (시트 0,5)"
+        },
+        "gravel": {
+          "base_id": 2912,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 자갈 (시트 2,2)"
+        },
+        "stone_path": {
+          "base_id": 2960,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 포장길 (시트 3,2)"
+        },
+        "water": {
+          "base_id": 2048,
+          "layer": 0,
+          "passable": false,
+          "note": "물 (A1, flags 0x080F)"
+        },
+        "wall": {
+          "base_id": 3488,
+          "layer": 1,
+          "passable": false,
+          "note": "회색 성벽/장애물 (시트 6,3, flags 0x0E0F)"
+        }
       },
       "objects": {
         "_note": "B/C 시트(base_id 0~1023) 단일 타일 오브젝트. 큰 이미지로 시각 검증 + flags 통행성 확인. 나무(184~186)는 멀티타일(잎+기둥)이라 제외 — 멀티타일 지원은 후속 과제. passable=false는 통행 차단.",
-        "rock": { "base_id": 159, "layer": 1, "passable": false, "note": "바위 더미 (flags 0x060F 막힘)" },
-        "desert_rock": { "base_id": 167, "layer": 1, "passable": false, "note": "사막 바위 (flags 0x060F 막힘)" },
-        "dead_tree": { "base_id": 240, "layer": 1, "passable": false, "note": "죽은 나무(황무지, 단일타일)" },
-        "berry_bush": { "base_id": 175, "layer": 1, "passable": false, "note": "열매 덤불 (flags 0x060F 막힘)" },
-        "grass_tuft": { "base_id": 160, "layer": 1, "passable": true, "note": "풀더미 (flags 0x0600 통과)" },
-        "flower": { "base_id": 161, "layer": 1, "passable": true, "note": "보라 꽃 (flags 0x0600 통과)" }
+        "rock": {
+          "base_id": 159,
+          "layer": 1,
+          "passable": false,
+          "note": "바위 더미 (flags 0x060F 막힘)"
+        },
+        "desert_rock": {
+          "base_id": 167,
+          "layer": 1,
+          "passable": false,
+          "note": "사막 바위 (flags 0x060F 막힘)"
+        },
+        "dead_tree": {
+          "base_id": 240,
+          "layer": 1,
+          "passable": false,
+          "note": "죽은 나무(황무지, 단일타일)"
+        },
+        "berry_bush": {
+          "base_id": 175,
+          "layer": 1,
+          "passable": false,
+          "note": "열매 덤불 (flags 0x060F 막힘)"
+        },
+        "grass_tuft": {
+          "base_id": 160,
+          "layer": 1,
+          "passable": true,
+          "note": "풀더미 (flags 0x0600 통과)"
+        },
+        "flower": {
+          "base_id": 161,
+          "layer": 1,
+          "passable": true,
+          "note": "보라 꽃 (flags 0x0600 통과)"
+        }
       },
       "multitile": {
         "_note": "여러 칸 오브젝트. tiles[행][열]=base_id, blocked[행][열]=통행차단. 샘플맵 2x2 패턴 추출+렌더 검증. layer1 배치.",
-        "tree": { "tiles": [[176, 177], [184, 185]], "blocked": [[false, false], [true, true]], "note": "초록 나무 2x2 (위=잎 통과, 아래=기둥 막힘)" },
-        "snow_tree": { "tiles": [[192, 193], [200, 201]], "blocked": [[false, false], [true, true]], "note": "눈 덮인 나무 2x2" }
+        "tree": {
+          "tiles": [
+            [
+              176,
+              177
+            ],
+            [
+              184,
+              185
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "초록 나무 2x2 (위=잎 통과, 아래=기둥 막힘)"
+        },
+        "snow_tree": {
+          "tiles": [
+            [
+              192,
+              193
+            ],
+            [
+              200,
+              201
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "눈 덮인 나무 2x2"
+        }
       }
     },
     "3": {
@@ -61,24 +203,127 @@
       "verified": true,
       "_note": "실내(집·상점·여관). 샘플맵 빈도+flags+시트 식별. 방 구조라 terrain 노이즈 생성엔 부적합 — palette 자산(생성기는 후속).",
       "terrain": {
-        "floor": { "base_id": 3584, "layer": 0, "passable": true, "note": "나무 마룻바닥" },
-        "tile_floor": { "base_id": 4016, "layer": 0, "passable": true, "note": "흰 타일 바닥" },
-        "carpet": { "base_id": 4064, "layer": 0, "passable": true, "note": "빨간 카펫" },
-        "wall": { "base_id": 6512, "layer": 0, "passable": false, "note": "벽돌 벽(앞면/정면)" },
-        "wall_top": { "base_id": 6752, "layer": 0, "passable": true, "note": "벽 윗면/천장(A4 STAR, flags상 통과 — 입체벽에서 생성기가 통행 차단)" },
-        "void": { "base_id": 1536, "layer": 0, "passable": false, "note": "검은 공백(방 밖)" }
+        "floor": {
+          "base_id": 3584,
+          "layer": 0,
+          "passable": true,
+          "note": "나무 마룻바닥"
+        },
+        "tile_floor": {
+          "base_id": 4016,
+          "layer": 0,
+          "passable": true,
+          "note": "흰 타일 바닥"
+        },
+        "carpet": {
+          "base_id": 4064,
+          "layer": 0,
+          "passable": true,
+          "note": "빨간 카펫"
+        },
+        "wall": {
+          "base_id": 6512,
+          "layer": 0,
+          "passable": false,
+          "note": "벽돌 벽(앞면/정면)"
+        },
+        "wall_top": {
+          "base_id": 6752,
+          "layer": 0,
+          "passable": true,
+          "note": "벽 윗면/천장(A4 STAR, flags상 통과 — 입체벽에서 생성기가 통행 차단)"
+        },
+        "void": {
+          "base_id": 1536,
+          "layer": 0,
+          "passable": false,
+          "note": "검은 공백(방 밖)"
+        }
       },
       "objects": {
         "_note": "실내 가구(단일타일). 침대(171)·책장(430)·기둥(444)·창문(76)은 멀티타일 — 후속.",
-        "chair": { "base_id": 120, "layer": 1, "passable": true, "note": "의자/스툴" },
-        "rug": { "base_id": 121, "layer": 1, "passable": true, "note": "원형 러그" },
-        "barrel": { "base_id": 212, "layer": 1, "passable": false, "note": "나무통" }
+        "chair": {
+          "base_id": 120,
+          "layer": 1,
+          "passable": true,
+          "note": "의자/스툴"
+        },
+        "rug": {
+          "base_id": 121,
+          "layer": 1,
+          "passable": true,
+          "note": "원형 러그"
+        },
+        "barrel": {
+          "base_id": 212,
+          "layer": 1,
+          "passable": false,
+          "note": "나무통"
+        }
       },
       "multitile": {
         "_note": "실내 멀티타일 가구. 샘플맵 2x2 패턴 추출+렌더 검증.",
-        "bed": { "tiles": [[171], [179]], "blocked": [[true], [true]], "note": "침대 1x2(세로)" },
-        "bookshelf": { "tiles": [[430, 431], [438, 439]], "blocked": [[false, false], [true, true]], "note": "책장 2x2(위=통과)" },
-        "pillar": { "tiles": [[444], [452]], "blocked": [[true], [true]], "note": "기둥 1x2(세로)" }
+        "bed": {
+          "tiles": [
+            [
+              171
+            ],
+            [
+              179
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "침대 1x2(세로)"
+        },
+        "bookshelf": {
+          "tiles": [
+            [
+              430,
+              431
+            ],
+            [
+              438,
+              439
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "책장 2x2(위=통과)"
+        },
+        "pillar": {
+          "tiles": [
+            [
+              444
+            ],
+            [
+              452
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "기둥 1x2(세로)"
+        }
       }
     },
     "4": {
@@ -87,23 +332,169 @@
       "verified": true,
       "_note": "동굴·지하미궁. BSP 방-복도 생성 대상(후속). 벽은 layer1 별도 식별 필요.",
       "terrain": {
-        "floor": { "base_id": 5888, "layer": 0, "passable": true, "note": "갈색 돌바닥" },
-        "floor_gray": { "base_id": 5936, "layer": 0, "passable": true, "note": "회색 돌바닥" },
-        "moss": { "base_id": 6080, "layer": 0, "passable": true, "note": "이끼 바닥" },
-        "lava": { "base_id": 2240, "layer": 0, "passable": false, "note": "용암(데미지)" },
-        "water": { "base_id": 2528, "layer": 0, "passable": false, "note": "물" },
-        "void": { "base_id": 1536, "layer": 0, "passable": false, "note": "검은 공백(벽 너머)" }
+        "floor": {
+          "base_id": 5888,
+          "layer": 0,
+          "passable": true,
+          "note": "갈색 돌바닥"
+        },
+        "floor_gray": {
+          "base_id": 5936,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 돌바닥"
+        },
+        "moss": {
+          "base_id": 6080,
+          "layer": 0,
+          "passable": true,
+          "note": "이끼 바닥"
+        },
+        "lava": {
+          "base_id": 2240,
+          "layer": 0,
+          "passable": false,
+          "note": "용암(A1, 검은암반 테두리 내장)"
+        },
+        "water": {
+          "base_id": 2528,
+          "layer": 0,
+          "passable": false,
+          "note": "물"
+        },
+        "void": {
+          "base_id": 1536,
+          "layer": 0,
+          "passable": false,
+          "note": "검은 공백(벽 너머)"
+        },
+        "lava_floor": {
+          "base_id": 7712,
+          "layer": 0,
+          "passable": true,
+          "note": "화산 바닥"
+        },
+        "ice_floor": {
+          "base_id": 7760,
+          "layer": 0,
+          "passable": true,
+          "note": "얼음/눈 바닥(흰색)"
+        },
+        "ice_water": {
+          "base_id": 2624,
+          "layer": 0,
+          "passable": false,
+          "note": "얼음물(A1, 수정 테두리 내장)"
+        },
+        "poison_floor": {
+          "base_id": 5888,
+          "layer": 0,
+          "passable": true,
+          "note": "독던전 바닥(일반)"
+        },
+        "poison_panel": {
+          "base_id": 4304,
+          "layer": 0,
+          "passable": true,
+          "note": "독 장판(보라, damage — 밟으면 데미지, 통행가능)"
+        },
+        "sand_floor": {
+          "base_id": 2816,
+          "layer": 0,
+          "passable": true,
+          "note": "모래 바닥(A2)"
+        },
+        "sand_water": {
+          "base_id": 2432,
+          "layer": 0,
+          "passable": false,
+          "note": "오아시스 물(A1, 모래 테두리)"
+        },
+        "crystal_floor": {
+          "base_id": 4016,
+          "layer": 0,
+          "passable": true,
+          "note": "수정 바닥(보라)"
+        },
+        "crystal_water": {
+          "base_id": 2624,
+          "layer": 0,
+          "passable": false,
+          "note": "수정 물(A1, 수정 테두리)"
+        },
+        "dark_floor": {
+          "base_id": 5984,
+          "layer": 0,
+          "passable": true,
+          "note": "어둠 바닥(어두운 암석)"
+        },
+        "moss_floor": {
+          "base_id": 6080,
+          "layer": 0,
+          "passable": true,
+          "note": "이끼 바닥"
+        },
+        "moss_water": {
+          "base_id": 2336,
+          "layer": 0,
+          "passable": false,
+          "note": "늪 물(A1, 풀 테두리)"
+        }
       },
       "objects": {
         "_note": "던전 오브젝트(단일타일). 크리스탈(277)·얼음기둥(269)은 멀티타일 — 후속.",
-        "pebbles": { "base_id": 33, "layer": 1, "passable": true, "note": "작은 돌무더기(통과)" },
-        "rock": { "base_id": 49, "layer": 1, "passable": true, "note": "회색 바위(통과)" },
-        "big_rock": { "base_id": 57, "layer": 1, "passable": false, "note": "큰 바위(막힘)" },
-        "stalagmite": { "base_id": 188, "layer": 1, "passable": false, "note": "종유석(막힘)" }
+        "pebbles": {
+          "base_id": 33,
+          "layer": 1,
+          "passable": true,
+          "note": "작은 돌무더기(통과)"
+        },
+        "rock": {
+          "base_id": 49,
+          "layer": 1,
+          "passable": true,
+          "note": "회색 바위(통과)"
+        },
+        "big_rock": {
+          "base_id": 57,
+          "layer": 1,
+          "passable": false,
+          "note": "큰 바위(막힘)"
+        },
+        "stalagmite": {
+          "base_id": 188,
+          "layer": 1,
+          "passable": false,
+          "note": "종유석(막힘)"
+        }
       },
       "multitile": {
         "_note": "던전 멀티타일. 샘플맵 패턴 추출+렌더 검증.",
-        "ice_crystal": { "tiles": [[261], [269], [277]], "blocked": [[true], [true], [false]], "note": "얼음 크리스탈 기둥 1x3(세로)" }
+        "ice_crystal": {
+          "tiles": [
+            [
+              261
+            ],
+            [
+              269
+            ],
+            [
+              277
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "얼음 크리스탈 기둥 1x3(세로)"
+        }
       }
     },
     "5": {
@@ -112,21 +503,84 @@
       "verified": true,
       "_note": "현대·SF 야외(도시·도로·공원).",
       "terrain": {
-        "road": { "base_id": 1554, "layer": 0, "passable": true, "note": "포장 도로" },
-        "grass": { "base_id": 2816, "layer": 0, "passable": true, "note": "잔디" },
-        "pavement": { "base_id": 2912, "layer": 0, "passable": true, "note": "회색 자갈" },
-        "tile": { "base_id": 5936, "layer": 0, "passable": true, "note": "타일 바닥" },
-        "water": { "base_id": 2624, "layer": 0, "passable": false, "note": "물" },
-        "void": { "base_id": 1544, "layer": 0, "passable": false, "note": "검은 공백" }
+        "road": {
+          "base_id": 1554,
+          "layer": 0,
+          "passable": true,
+          "note": "포장 도로"
+        },
+        "grass": {
+          "base_id": 2816,
+          "layer": 0,
+          "passable": true,
+          "note": "잔디"
+        },
+        "pavement": {
+          "base_id": 2912,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 자갈"
+        },
+        "tile": {
+          "base_id": 5936,
+          "layer": 0,
+          "passable": true,
+          "note": "타일 바닥"
+        },
+        "water": {
+          "base_id": 2624,
+          "layer": 0,
+          "passable": false,
+          "note": "물"
+        },
+        "void": {
+          "base_id": 1544,
+          "layer": 0,
+          "passable": false,
+          "note": "검은 공백"
+        }
       },
       "objects": {
         "_note": "SF 외곽 오브젝트(단일타일). 가로등(316)·벤치(26/473)·펜스(439)·나무는 멀티타일 — 후속.",
-        "hydrant": { "base_id": 94, "layer": 1, "passable": false, "note": "소화전/기계(막힘)" }
+        "hydrant": {
+          "base_id": 94,
+          "layer": 1,
+          "passable": false,
+          "note": "소화전/기계(막힘)"
+        }
       },
       "multitile": {
         "_note": "SF 외곽 멀티타일. 샘플맵 패턴 추출+렌더 검증. 가로등(316/466)은 형태 애매해 보류.",
-        "bench": { "tiles": [[473, 473]], "blocked": [[true, true]], "note": "벤치 2x1(가로)" },
-        "fence": { "tiles": [[439, 439]], "blocked": [[true, true]], "note": "철제 펜스 2x1(가로)" }
+        "bench": {
+          "tiles": [
+            [
+              473,
+              473
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "벤치 2x1(가로)"
+        },
+        "fence": {
+          "tiles": [
+            [
+              439,
+              439
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "철제 펜스 2x1(가로)"
+        }
       }
     },
     "6": {
@@ -135,23 +589,87 @@
       "verified": true,
       "_note": "현대·SF 실내(연구소·교실·우주선·아파트).",
       "terrain": {
-        "floor": { "base_id": 5936, "layer": 0, "passable": true, "note": "회색 바닥" },
-        "tile_floor": { "base_id": 1620, "layer": 0, "passable": true, "note": "흰 타일 바닥" },
-        "metal_floor": { "base_id": 1603, "layer": 0, "passable": true, "note": "금속 패널 바닥" },
-        "wall": { "base_id": 6368, "layer": 0, "passable": false, "note": "흰 벽" },
-        "wall2": { "base_id": 6320, "layer": 0, "passable": false, "note": "회색 벽" },
-        "dark_wall": { "base_id": 6416, "layer": 0, "passable": false, "note": "어두운 금속벽(방 경계 대비용, 밝기 73)" }
+        "floor": {
+          "base_id": 5936,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 바닥"
+        },
+        "tile_floor": {
+          "base_id": 1620,
+          "layer": 0,
+          "passable": true,
+          "note": "흰 타일 바닥"
+        },
+        "metal_floor": {
+          "base_id": 1603,
+          "layer": 0,
+          "passable": true,
+          "note": "금속 패널 바닥"
+        },
+        "wall": {
+          "base_id": 6368,
+          "layer": 0,
+          "passable": false,
+          "note": "흰 벽"
+        },
+        "wall2": {
+          "base_id": 6320,
+          "layer": 0,
+          "passable": false,
+          "note": "회색 벽"
+        },
+        "dark_wall": {
+          "base_id": 6416,
+          "layer": 0,
+          "passable": false,
+          "note": "어두운 금속벽(방 경계 대비용, 밝기 73)"
+        }
       },
       "objects": {
         "_note": "SF 내부 오브젝트(단일타일). 난간(96) 등 일부는 멀티타일 — 후속.",
-        "pipe": { "base_id": 313, "layer": 1, "passable": false, "note": "파이프 연결부(막힘)" },
-        "plant": { "base_id": 294, "layer": 1, "passable": true, "note": "화분 식물(통과)" },
-        "toilet": { "base_id": 145, "layer": 1, "passable": false, "note": "변기/세면대(막힘)" },
-        "cabinet": { "base_id": 217, "layer": 1, "passable": false, "note": "캐비닛/콘솔(막힘)" }
+        "pipe": {
+          "base_id": 313,
+          "layer": 1,
+          "passable": false,
+          "note": "파이프 연결부(막힘)"
+        },
+        "plant": {
+          "base_id": 294,
+          "layer": 1,
+          "passable": true,
+          "note": "화분 식물(통과)"
+        },
+        "toilet": {
+          "base_id": 145,
+          "layer": 1,
+          "passable": false,
+          "note": "변기/세면대(막힘)"
+        },
+        "cabinet": {
+          "base_id": 217,
+          "layer": 1,
+          "passable": false,
+          "note": "캐비닛/콘솔(막힘)"
+        }
       },
       "multitile": {
         "_note": "SF 내부 멀티타일. 샘플맵 패턴 추출+렌더 검증.",
-        "railing": { "tiles": [[96, 98]], "blocked": [[false, false]], "note": "난간 2x1(가로, 통과 장식)" }
+        "railing": {
+          "tiles": [
+            [
+              96,
+              98
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "난간 2x1(가로, 통과 장식)"
+        }
       }
     }
   }
