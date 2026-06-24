@@ -103,11 +103,27 @@ def _terrain_dims():
 
 
 def test_terrain_mode_diverse():
-    """고도맵으로 3종 이상 지형이 배치된다."""
-    d = generate_terrain_map(_terrain_dims(), seed=3, autotile=True)
+    """고도맵으로 여러 지형(물/잔디/자갈 등)이 배치된다."""
+    d = generate_terrain_map(_terrain_dims(), seed=3, autotile=True, variants=False)
     terrain_ids = set(pal.terrain_map(2).values())
     bases = {base_of(d[i]) for i in range(40 * 40)}
     assert len(bases & terrain_ids) >= 3
+
+
+def test_biome_bands_data_compatible():
+    """모든 바이옴의 연속 밴드쌍이 샘플맵 인접 데이터상 호환이어야 한다(어색한 인접 방지)."""
+    from agent.generation.mapgen import tile_adjacency as adj
+    from agent.generation.mapgen.palette_mapgen import _BIOMES, _water_id
+
+    biome_ts = {"grassland": 2, "desert": 2, "snow": 2, "wetland": 2, "city": 5}
+    for biome, bands in _BIOMES.items():
+        ts = biome_ts[biome]
+        ids = [
+            (nm, _water_id(biome, ts) if nm == "water" else pal.get_tile_id(ts, nm))
+            for _, nm in bands
+        ]
+        for (na, a), (nb, b) in zip(ids, ids[1:]):
+            assert adj.compatible(ts, a, b), f"{biome}: {na}({a})-{nb}({b}) 비호환 인접"
 
 
 def test_terrain_deterministic():
@@ -130,15 +146,19 @@ def test_terrain_water_blocked():
     assert checked  # 물 타일이 실제로 존재해 검증됐는지
 
 
-def test_variant_diversity():
-    """_pick_variant 가 시드에 따라 여러 잔디 변형을 선택한다(맵 간 다양성)."""
-    import random
+def test_pure_variants_exclude_foreign_terrain():
+    """_pure_variants 는 색만 비슷한 다른 지형 타일을 제외한다.
 
-    from agent.generation.mapgen.palette_mapgen import _pick_variant
+    잔디 변형으로 잡히는 3248(실제 모래)·3632(실제 흙)는 순수 변형이 아니다.
+    오토타일 지면은 보통 순수 변형이 없어 [base] 로 수렴한다(충돌 방지).
+    """
+    from agent.generation.mapgen.palette_mapgen import _pure_variants
 
     grass = pal.get_tile_id(2, "grass")
-    picks = {_pick_variant(2, grass, random.Random(s)) for s in range(30)}
-    assert len(picks) >= 2  # 시드마다 다른 변형이 선택됨
+    pure = set(_pure_variants(2, grass))
+    assert grass in pure
+    assert 3248 not in pure  # 모래 타일
+    assert 3632 not in pure  # 흙 타일
 
 
 def test_variants_off_uses_base():
@@ -147,6 +167,33 @@ def test_variants_off_uses_base():
     grass = pal.get_tile_id(2, "grass")
     bases = {base_of(d[i]) for i in range(40 * 40)}
     assert grass in bases  # 원본 잔디 그대로
+
+
+def test_terrain_no_foreign_terrain_bleed():
+    """지면은 캐노니컬만 사용 — 변형이 다른 지형(모래·흙·눈)을 흘리지 않는다.
+
+    grassland 의 지면 base 는 {물·잔디·자갈} 캐노니컬뿐이어야 한다(variant_regions 무관).
+    """
+    allowed = {pal.get_tile_id(2, n) for n in ("water", "grass", "gravel")}
+    terrain_ids = set(pal.terrain_map(2).values())
+    for vr in (1, 4):
+        d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", variant_regions=vr)
+        used = {base_of(d[i]) for i in range(40 * 40)} & terrain_ids
+        assert used <= allowed, f"vr={vr}: 외래 지형 누출 {used - allowed}"
+
+
+def test_region_variants_deterministic():
+    """같은 seed·variant_regions → 동일 결과."""
+    a = generate_terrain_map(MapDims(30, 30, 2), seed=7, variant_regions=3)
+    b = generate_terrain_map(MapDims(30, 30, 2), seed=7, variant_regions=3)
+    assert a == b
+
+
+def test_region_variants_one_equals_map_level():
+    """variant_regions=1 은 기존 맵단위 동작과 완전히 동일(회귀 가드)."""
+    a = generate_terrain_map(MapDims(30, 30, 2), seed=9, variant_regions=1)
+    b = generate_terrain_map(MapDims(30, 30, 2), seed=9)  # 기본값
+    assert a == b
 
 
 def test_all_biomes_render():

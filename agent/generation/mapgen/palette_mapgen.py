@@ -49,19 +49,37 @@ class MapDims:
 
 # 바이옴별 고도 밴드 → 지형 (낮을수록 물/저지, 높을수록 고지).
 # 각 항목 = (상한 임계값, 지형 이름). 마지막 임계값은 1.0 초과(모든 고도 커버).
+# ⚠️ 밴드 인접 규칙은 추측 금지 — 샘플맵 전수조사(tile_adjacency.json)로 검증한다.
+# tileset2 실측: 이름붙은 지형 중 호환 인접쌍은 water↔grass, grass↔gravel 뿐.
+# sand/dirt/snow 는 서로·잔디와 안 섞이고 자기 변형·구조물(A4)하고만 인접한다.
+# 따라서 바이옴 = "지배 지형 1종 + 호환 물 + 호환 보조"의 호환 체인으로만 구성한다.
+# (연속 밴드쌍이 tile_adjacency.compatible 을 통과하는지 test 로 강제)
 _BIOMES: dict[str, list[tuple[float, str]]] = {
-    # 물·모래해안·잔디평원·흙언덕·자갈고지
-    "grassland": [(0.30, "water"), (0.38, "sand"), (0.70, "grass"), (0.84, "dirt"), (1.01, "gravel")],
-    # 작은 오아시스 → 모래사막 위주 → 흙 → 자갈바위
-    "desert": [(0.12, "water"), (0.20, "grass"), (0.78, "sand"), (0.90, "dirt"), (1.01, "gravel")],
-    # 얼음호수 → 바위해안 → 눈평원 → 자갈봉우리
-    "snow": [(0.30, "water"), (0.40, "gravel"), (0.92, "snow"), (1.01, "gravel")],
-    # 물 많은 습지 → 모래 가장자리 → 잔디 → 흙
-    "wetland": [(0.50, "water"), (0.58, "sand"), (0.85, "grass"), (1.01, "dirt")],
-    # SF외곽 도시(tileset 5): 물 → 잔디공원 → 도로 → 포장 → 타일
+    # 물(잔디물가 2048) → 잔디평원 → 자갈고지. (water-grass, grass-gravel 모두 호환)
+    "grassland": [(0.30, "water"), (0.86, "grass"), (1.01, "gravel")],
+    # 모래사막 단일 지형(모래는 다른 지면과 안 섞임 — 변형·오브젝트로 다양성).
+    "desert": [(1.01, "sand")],
+    # 얼음호수(눈물가 물 2240) → 눈평원. (2240-snow 호환)
+    "snow": [(0.30, "water"), (1.01, "snow")],
+    # 물 많은 습지: 물 → 잔디. (water-grass 호환)
+    "wetland": [(0.50, "water"), (1.01, "grass")],
+    # SF외곽 도시(tileset 5): 물 → 잔디공원 → 도로 → 포장 → 타일 (road/pavement 일부 A5)
     "city": [(0.25, "water"), (0.40, "grass"), (0.70, "road"), (0.86, "pavement"), (1.01, "tile")],
 }
 DEFAULT_BIOME = "grassland"
+
+# 가장자리(물가 등)가 타일에 구워진 지형 — 변형(다른 오토타일 패밀리) 시 가장자리 색이
+# 이웃과 충돌하므로 변형 제외하고 캐노니컬 타일만 쓴다. (A1 물 계열이 대표적)
+_NO_VARIANT_TERRAINS: frozenset[str] = frozenset({"water"})
+
+# 바이옴별 물 패밀리(base_id). 물 타일의 구워진 물가 색이 둘레 지형과 맞아야 자연스럽다.
+# 샘플맵 실측: 2048=잔디물가, 2240=눈물가. 미지정 바이옴은 palette 기본(2048) 사용.
+_BIOME_WATER: dict[str, int] = {"snow": 2240}
+
+
+def _water_id(biome: str, tid: int) -> int:
+    """바이옴에 맞는 물 base_id (물가 색이 둘레 지형과 일치하도록)."""
+    return _BIOME_WATER.get(biome, pal.get_tile_id(tid, "water"))
 
 # 바이옴 → [(오브젝트 이름, 배치 대상 지형, 밀도)]. 오브젝트는 palette objects 에 정의.
 _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
@@ -156,28 +174,6 @@ def _value_noise(width: int, height: int, cells: int, seed: int):
     return top * (1 - fy) + bot * fy
 
 
-def _smooth_terrain(data: list[int], width: int, height: int, passes: int = 2) -> None:
-    """레이어0 지형을 majority 필터로 매끈하게(작은 조각·들쭉날쭉 경계 제거).
-
-    각 칸을 8방향 이웃의 최빈 지형으로 교체하되, 5칸 이상이 동일할 때만.
-    오토타일 적용 전 base_id 상태에서 호출한다. 큰 지형은 유지, 고립 조각은 흡수.
-    """
-    dirs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
-    for _ in range(passes):
-        snap = data[: width * height]  # 레이어0 스냅샷
-        for y in range(height):
-            for x in range(width):
-                counts: dict[int, int] = {}
-                for dx, dy in dirs:
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < width and 0 <= ny < height:
-                        v = snap[ny * width + nx]
-                        counts[v] = counts.get(v, 0) + 1
-                best = max(counts, key=lambda k: counts[k])
-                if counts[best] >= 5 and best != snap[y * width + x]:
-                    set_tile(data, x, y, width, height, 0, best)
-
-
 def _terr_ids(tid: int) -> dict[str, int]:
     """tileset 의 {지형이름: base_id} 전체 매핑 (배치 대상 지형 조회용)."""
     ts = pal.get_tileset(tid)
@@ -186,16 +182,49 @@ def _terr_ids(tid: int) -> dict[str, int]:
     return {n: int(v["base_id"]) for n, v in ts.get("terrain", {}).items()}
 
 
-def _pick_variant(tid: int, base_id: int, rng: random.Random) -> int:
-    """카탈로그에서 같은 의미군 변형 중 하나를 빈도 가중으로 선택(맵당 1회).
+def _pure_variants(tid: int, base_id: int) -> list[int]:
+    """find_variants 중 '같은 지형의 순수 텍스처 변형'만 — 변형의 지배 이웃 색군이
+    base 와 같은 것만 남긴다.
 
-    오토타일 충돌을 피하려 칸마다 바꾸지 않고 맵 단위로 고른다 → 맵 간 텍스처 다양성.
-    카탈로그/변형 없으면 원본 base_id 그대로.
+    오토타일 변형(색거리 기반)은 대부분 다른 지형의 전이 타일이다(예: 모래 옆에 오는
+    '잔디 변형' 3248 은 실제로 모래 타일). 그런 걸 변형으로 깔면 가장자리 색이 충돌한다.
+    샘플맵 인접 데이터로 지배 이웃 색군이 base 와 다른 변형을 걸러낸다. 지면 오토타일은
+    대개 패밀리당 텍스처 1개뿐이라 결과가 [base](캐노니컬)로 수렴한다 → 충돌 없음.
+    """
+    try:
+        from agent.generation.mapgen import tile_adjacency as adj
+        from agent.generation.mapgen import tile_catalog as tc
+
+        base_meta = tc.get_tile_meta(tid, base_id)
+        if not base_meta:
+            return [base_id]
+        base_grp = tc.color_group(base_meta["rgb"])
+        out = [base_id]
+        for v in tc.find_variants(tid, base_id, max_dist=48.0):
+            if v == base_id:
+                continue
+            g = adj.ground_neighbors(tid, v)
+            if not g:
+                continue  # 인접 데이터 없는 희귀 타일은 보수적으로 제외
+            dom = max(g, key=lambda k: g[k])
+            dmeta = tc.get_tile_meta(tid, dom)
+            if dmeta and tc.color_group(dmeta["rgb"]) == base_grp:
+                out.append(v)
+        return out
+    except Exception:
+        return [base_id]
+
+
+def _pick_variant(tid: int, base_id: int, rng: random.Random) -> int:
+    """순수 변형(같은 지형 텍스처) 중 하나를 빈도 가중으로 선택(맵당 1회).
+
+    오토타일 충돌을 피하려 칸마다 바꾸지 않고 맵 단위로 고른다. 순수 변형이 없으면
+    (지면 오토타일은 대개 그렇다) 원본 base_id 그대로.
     """
     try:
         from agent.generation.mapgen import tile_catalog as tc
 
-        variants = tc.find_variants(tid, base_id, max_dist=48.0)
+        variants = _pure_variants(tid, base_id)
         if len(variants) <= 1:
             return base_id
         weights = [(tc.get_tile_meta(tid, v) or {}).get("count", 1) for v in variants]
@@ -205,13 +234,88 @@ def _pick_variant(tid: int, base_id: int, rng: random.Random) -> int:
 
 
 def _variant_set(tid: int, base_id: int) -> set[int]:
-    """지형의 변형 base_id 집합 (배치 매칭용 — 변형 바닥 위에도 오브젝트 배치)."""
-    try:
-        from agent.generation.mapgen import tile_catalog as tc
+    """지형의 순수 변형 base_id 집합 (배치 매칭용 — 변형 바닥 위에도 오브젝트 배치)."""
+    return set(_pure_variants(tid, base_id)) | {base_id}
 
-        return set(tc.find_variants(tid, base_id, max_dist=48.0)) | {base_id}
-    except Exception:
-        return {base_id}
+
+def _assign_region_variants(
+    tid: int, base_id: int, n: int, rng: random.Random
+) -> list[int]:
+    """영역 n개에 변형을 배정 — 영역끼리 되도록 다른 변형(부족하면 순환).
+
+    _pick_variant 의 빈도 가중은 흔한 타일로 쏠려 영역을 나눠도 같은 변형만 나오므로,
+    여기선 변형 목록을 셔플해 영역마다 다른 변형을 깐다(맵 내 패치 효과). 변형이
+    1개뿐이면 전부 원본. 색이 가까운(rgb≤48) 변형만 모이므로 패치는 부드럽다.
+    """
+    vs = _pure_variants(tid, base_id)
+    if len(vs) <= 1:
+        return [base_id] * n
+    rng.shuffle(vs)
+    return [vs[z % len(vs)] for z in range(n)]
+
+
+def _zone_map(width: int, height: int, seed: int, n_regions: int) -> list[list[int]]:
+    """저주파 노이즈를 n_regions 등분 → 칸별 zone id(0..n_regions-1).
+
+    같은 지형이라도 영역마다 다른 변형을 깔기 위한 구획. 저주파라 큰 덩어리로
+    나뉘어, 변형끼리 생기는 오토타일 이음새가 드물다(변형은 색이 가까워 부드러운
+    패치로 보인다). 고도맵과 다른 seed 를 써 지형 경계와 변형 경계를 분리한다.
+    """
+    nz = _value_noise(width, height, cells=max(2, min(width, height) // 16), seed=seed)
+    lo = float(nz.min())
+    span = float(nz.max()) - lo + 1e-9
+    return [
+        [min(n_regions - 1, int((float(nz[y, x]) - lo) / span * n_regions)) for x in range(width)]
+        for y in range(height)
+    ]
+
+
+def _smooth_idx(idx: list[list[int]], width: int, height: int, passes: int = 2) -> None:
+    """밴드 인덱스 격자를 majority 필터로 매끈하게(작은 조각·들쭉날쭉 경계 제거). in-place.
+
+    8방향 중 5칸 이상이 동일 인덱스일 때만 교체 → 큰 덩어리는 유지, 고립 조각은 흡수.
+    """
+    dirs = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+    for _ in range(passes):
+        snap = [row[:] for row in idx]
+        for y in range(height):
+            for x in range(width):
+                counts: dict[int, int] = {}
+                for dx, dy in dirs:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < width and 0 <= ny < height:
+                        v = snap[ny][nx]
+                        counts[v] = counts.get(v, 0) + 1
+                best = max(counts, key=lambda k: counts[k])
+                if counts[best] >= 5 and best != snap[y][x]:
+                    idx[y][x] = best
+
+
+def _relax_transitions(idx: list[list[int]], width: int, height: int) -> None:
+    """인접 칸 밴드 인덱스 차이를 ≤1로 강제 — 호환 지형끼리만 인접(전이 보정). in-place.
+
+    idx[c] = min(idx[c], 직교이웃_최소 + 1) 을 수렴까지 반복. 수렴 시 모든 변에서
+    |Δidx|≤1 이 보장돼, 물(0)↔잔디(2)처럼 단계를 건너뛴 인접이 사라지고 사이에
+    모래(1) 같은 전이 밴드가 자동으로 한 줄 삽입된다(고지가 저지 쪽으로 깎임).
+    """
+    ortho = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    changed = True
+    guard = 0
+    while changed and guard < width + height + 8:
+        changed = False
+        guard += 1
+        for y in range(height):
+            for x in range(width):
+                nb_min = None
+                for dx, dy in ortho:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < width and 0 <= ny < height:
+                        v = idx[ny][nx]
+                        if nb_min is None or v < nb_min:
+                            nb_min = v
+                if nb_min is not None and idx[y][x] > nb_min + 1:
+                    idx[y][x] = nb_min + 1
+                    changed = True
 
 
 def _place_objects(
@@ -299,6 +403,7 @@ def generate_terrain_map(
     biome: str = DEFAULT_BIOME,
     objects: bool = True,
     variants: bool = True,
+    variant_regions: int = 1,
 ) -> list[int]:
     """value noise 고도맵으로 바이옴별 지형을 자연스럽게 배치.
 
@@ -317,26 +422,57 @@ def generate_terrain_map(
     lo, hi = float(elev.min()), float(elev.max())
     elev = (elev - lo) / (hi - lo + 1e-9)
 
-    data = make_empty_data(w, h)
-    # 지형마다 변형 1종을 맵 단위로 선택(맵 간 텍스처 다양성). variants=False면 원본.
-    vrng = random.Random(s + 7)
-    ids = {
-        name: (_pick_variant(tid, pal.get_tile_id(tid, name), vrng) if variants else pal.get_tile_id(tid, name))
-        for _, name in bands
-    }
+    # 1) 고도 → 밴드 인덱스 격자(0=최저지)
+    names = [nm for _, nm in bands]
+    idx = [[len(bands) - 1] * w for _ in range(h)]
     for y in range(h):
         for x in range(w):
             e = float(elev[y, x])
-            for thr, name in bands:
+            for i, (thr, _nm) in enumerate(bands):
                 if e < thr:
-                    set_tile(data, x, y, w, h, 0, ids[name])
+                    idx[y][x] = i
                     break
 
-    _smooth_terrain(data, w, h, passes=2)  # 작은 조각 제거 → 큰 덩어리 지형
+    # 2) 작은 조각 정리 → 3) 전이 보정(인접 밴드 차 ≤1 → 호환 지형끼리만 인접)
+    _smooth_idx(idx, w, h, passes=2)
+    _relax_transitions(idx, w, h)
+
+    # 4) 변형 선택: variant_regions>1=영역단위 패치, 아니면 맵단위 1종(variants=False=원본).
+    #    물 등 가장자리가 구워진 지형(_NO_VARIANT_TERRAINS)은 변형 시 충돌하므로 캐노니컬 고정.
+    if variants and variant_regions > 1:
+        zones = _zone_map(w, h, s + 13, variant_regions)
+        zone_ids = [{} for _ in range(variant_regions)]
+        for bi, nm in enumerate(names):
+            base = _water_id(biome, tid) if nm == "water" else pal.get_tile_id(tid, nm)
+            if nm in _NO_VARIANT_TERRAINS:
+                vs = [base] * variant_regions
+            else:
+                vs = _assign_region_variants(
+                    tid, base, variant_regions, random.Random(s + 31 * (bi + 1))
+                )
+            for z in range(variant_regions):
+                zone_ids[z][nm] = vs[z]
+    else:
+        zones = None
+        vrng = random.Random(s + 7)
+        flat_ids = {}
+        for nm in names:
+            base = _water_id(biome, tid) if nm == "water" else pal.get_tile_id(tid, nm)
+            use_var = variants and nm not in _NO_VARIANT_TERRAINS
+            flat_ids[nm] = _pick_variant(tid, base, vrng) if use_var else base
+
+    data = make_empty_data(w, h)
+    for y in range(h):
+        for x in range(w):
+            nm = names[idx[y][x]]
+            tile = zone_ids[zones[y][x]][nm] if zones is not None else flat_ids[nm]
+            set_tile(data, x, y, w, h, 0, tile)
 
     if autotile:
         apply_autotile(data, w, h, layer=0, oob_connected=True)
-    _set_passability_by_base(data, w, h, pal.impassable_ids(tid))
+    # 바이옴 물(2240 등 palette 외 id 포함)도 통행 불가로 보장
+    impass = set(pal.impassable_ids(tid)) | {_water_id(biome, tid)}
+    _set_passability_by_base(data, w, h, impass)
 
     if objects:
         rng = random.Random(s + 99)
@@ -645,6 +781,12 @@ def main(argv: list[str] | None = None) -> None:
         "--no-variants", action="store_true", help="지형 텍스처 변형(맵 간 다양성) 비활성화"
     )
     parser.add_argument(
+        "--variant-regions",
+        type=int,
+        default=3,
+        help="terrain 변형을 맵 내 N개 영역으로 나눠 적용(1=맵 전체 1종, 기본 3)",
+    )
+    parser.add_argument(
         "--render", default=None, help="실제 타일셋으로 렌더한 PNG 경로 (--base-game 필요)"
     )
     parser.add_argument(
@@ -693,6 +835,7 @@ def main(argv: list[str] | None = None) -> None:
             biome="city",
             objects=not args.no_objects,
             variants=not args.no_variants,
+            variant_regions=args.variant_regions,
         )
         mode_label = "sf_outside/city"
     elif args.mode == "terrain":
@@ -703,6 +846,7 @@ def main(argv: list[str] | None = None) -> None:
             biome=args.biome,
             objects=not args.no_objects,
             variants=not args.no_variants,
+            variant_regions=args.variant_regions,
         )
         mode_label = f"terrain/{args.biome}"
     else:
