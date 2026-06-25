@@ -147,10 +147,15 @@ _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
     # 실내(tileset 3): 마루 위에 가구
     # 벽 인접(wall_adjacent)으로만 배치돼 후보가 적어 밀도를 높게 잡는다. rug 는 카펫 러그
     # 영역과 중복이라 제외. table/barrel/chair 는 막힘/통과 섞여 벽 따라 정돈된다.
+    # 바닥에 자연스러운 것만(통·항아리·화분·바구니). 곰인형(teddy)·책더미(book_stack)는
+    # 바닥에 두면 어색해 제외 — 대신 _place_on_furniture 가 침대/책장 위에 올린다.
     "interior": [
-        ("table", "floor", 0.06),
-        ("barrel", "floor", 0.10),
-        ("chair", "floor", 0.10),
+        ("barrel", "floor", 0.05),
+        ("pottery", "floor", 0.04),
+        ("bucket", "floor", 0.03),
+        ("plant_pot", "floor", 0.04),
+        ("basket", "floor", 0.03),
+        ("chair", "floor", 0.04),
     ],
     # SF외곽(tileset 5): 도로·포장에 소화전
     "city": [
@@ -174,11 +179,16 @@ _BIOME_MULTITILE: dict[str, list[tuple[str, str, float]]] = {
     "snow": [("snow_tree", "snow", 0.050)],
     "wetland": [("tree", "grass", 0.045)],
     "dungeon": [("ice_crystal", "floor", 0.010)],
-    # 벽쪽 배치(against_wall)라 후보가 적어 밀도를 높게 잡는다
+    # 벽쪽 배치(against_wall) — 다양한 가구를 낮은 밀도로 섞어 방마다 다르게.
+    # organ(파이프오르간)은 교회용 + 철창살처럼 보여 일반 집엔 제외.
     "interior": [
-        ("bed", "floor", 0.10),
-        ("bookshelf", "floor", 0.08),
-        ("pillar", "floor", 0.05),
+        ("bed_large", "floor", 0.04),
+        ("sofa", "floor", 0.03),
+        ("bookshelf2", "floor", 0.05),
+        ("cabinet", "floor", 0.05),
+        ("piano", "floor", 0.02),
+        ("fireplace", "floor", 0.03),
+        ("clock", "floor", 0.04),
     ],
     # SF외곽: 잔디공원에 벤치·펜스
     "city": [
@@ -366,6 +376,190 @@ def _relax_transitions(idx: list[list[int]], width: int, height: int) -> None:
                     changed = True
 
 
+def _blocking_avoid(data: list[int], width: int, height: int) -> set[tuple[int, int]]:
+    """막힘 오브젝트를 두면 길이 끊기는 칸(관절점 + 1칸 통로)을 반환한다.
+
+    현재 통행 가능(L5=0) 칸을 그래프로 보고 관절점(articulation point)을 찾는다 —
+    관절점에 막힘 오브젝트를 두면 통로가 끊겨 플레이어가 못 지나간다(외나무다리·복도).
+    1칸 너비 일직선 통로도 병목이라 함께 회피한다. tile_checker 의 관절점 구현(Tarjan)을 재사용.
+    """
+    from agent.generation.mapgen.tile_checker import find_articulation_points
+
+    walkable = {
+        (x, y)
+        for y in range(height)
+        for x in range(width)
+        if get_tile(data, x, y, width, height, 5) == 0
+    }
+    avoid = find_articulation_points(walkable)
+    for x, y in walkable:
+        nbrs = [
+            (x + dx, y + dy)
+            for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0))
+            if (x + dx, y + dy) in walkable
+        ]
+        if len(nbrs) == 2:
+            (x1, y1), (x2, y2) = nbrs
+            if abs(x1 - x2) + abs(y1 - y2) > 1:  # 일직선 1칸 통로
+                avoid.add((x, y))
+    return avoid
+
+
+def _connect_regions(data: list[int], width: int, height: int, floor_id: int) -> None:
+    """분리된 통행 가능 영역들을 벽 1칸씩 뚫어 하나로 잇는다(문 막힘·고립 방 복구).
+
+    block_avoid(관절점 회피)로도 막지 못한 구조적 분리(문이 자식 내벽에 막히는 등)나
+    가구가 막은 통로를 사후 복구한다. 통행 가능(L5=0) 영역을 BFS 라벨링해, 가장 큰 영역과
+    1칸 벽을 사이에 둔 다른 영역을 찾으면 그 벽을 floor 로 뚫어 연결한다(수렴까지 반복).
+
+    뚫는 경로가 가구(멀티타일)를 관통하면 그 칸만 지워져 반쪽 가구가 남는다 —
+    이는 호출 측에서 _clean_partial_multitiles 로 사후 정리한다(반쪽 가구를 통째 제거).
+    """
+    for _ in range(width * height):  # 안전 한도
+        walk = {
+            (x, y)
+            for y in range(height)
+            for x in range(width)
+            if get_tile(data, x, y, width, height, 5) == 0
+        }
+        if len(walk) < 2:
+            return
+        label: dict[tuple[int, int], int] = {}
+        comps: list[list[tuple[int, int]]] = []
+        for s in walk:
+            if s in label:
+                continue
+            comp: list[tuple[int, int]] = []
+            stack = [s]
+            label[s] = len(comps)
+            while stack:
+                cx, cy = stack.pop()
+                comp.append((cx, cy))
+                for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    t = (cx + dx, cy + dy)
+                    if t in walk and t not in label:
+                        label[t] = len(comps)
+                        stack.append(t)
+            comps.append(comp)
+        if len(comps) <= 1:
+            return
+        comps.sort(key=len, reverse=True)
+        main = set(comps[0])
+        connected = False
+        for comp in comps[1:]:  # 큰 영역과 벽(1~3칸)을 사이에 둔 영역을 뚫어 연결
+            for cx, cy in comp:
+                for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                    for dist in (2, 3, 4):  # 벽 1·2·3칸 너머에 main 이 있으면 그 벽들을 뚫음
+                        bx, by = cx + dist * dx, cy + dist * dy
+                        if 0 <= bx < width and 0 <= by < height and (bx, by) in main:
+                            for k in range(1, dist):
+                                wx, wy = cx + k * dx, cy + k * dy
+                                for li in range(6):
+                                    set_tile(data, wx, wy, width, height, li, 0)
+                                set_tile(data, wx, wy, width, height, 0, floor_id)
+                            connected = True
+                            break
+                    if connected:
+                        break
+                if connected:
+                    break
+            if connected:
+                break
+        if not connected:
+            return  # 3칸 벽으로도 못 잇는 영역 — 더 진행 안 함
+
+
+def _fill_isolated_pockets(
+    data: list[int], width: int, height: int, wall_top: int, max_size: int = 3
+) -> None:
+    """벽으로 완전히 둘러싸여 못 잇는 작은 고립 칸(≤max_size)을 벽으로 메운다.
+
+    _connect_regions 가 3칸 벽 한도로도 잇지 못한 1~몇 칸짜리 고립 포켓(문 없는 1칸 방
+    등)은 도달 불가라 플레이 공간이 아니다. 긴 터널로 억지로 잇기보다 벽으로 메워
+    '섬'을 없앤다(큰 영역은 건드리지 않아 실제 방 손실 없음).
+    """
+    walk = {
+        (x, y)
+        for y in range(height)
+        for x in range(width)
+        if get_tile(data, x, y, width, height, 5) == 0
+    }
+    label: dict[tuple[int, int], int] = {}
+    comps: list[list[tuple[int, int]]] = []
+    for s in walk:
+        if s in label:
+            continue
+        comp: list[tuple[int, int]] = []
+        stack = [s]
+        label[s] = len(comps)
+        while stack:
+            cx, cy = stack.pop()
+            comp.append((cx, cy))
+            for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                t = (cx + dx, cy + dy)
+                if t in walk and t not in label:
+                    label[t] = len(comps)
+                    stack.append(t)
+        comps.append(comp)
+    if len(comps) <= 1:
+        return
+    comps.sort(key=len, reverse=True)
+    for comp in comps[1:]:  # 가장 큰 영역 외 — 작은 포켓만 벽으로 메움
+        if len(comp) > max_size:
+            continue
+        for x, y in comp:
+            for li in range(6):
+                set_tile(data, x, y, width, height, li, 0)
+            set_tile(data, x, y, width, height, 0, wall_top)
+            set_tile(data, x, y, width, height, 5, 1)  # 벽 = 통행 불가
+
+
+def _clean_partial_multitiles(data: list[int], width: int, height: int, tileset: int) -> None:
+    """반쪽만 남은 멀티타일(가구)을 통째로 지운다 — _connect_regions 가 가구를 관통해
+    뚫으면 한 칸이 비어 반쪽 가구가 남는 걸 정리한다.
+
+    palette 의 각 멀티타일에 대해, 좌상 앵커 타일이 깔린 위치를 찾아 footprint 전체가
+    온전한지 검사한다. 한 칸이라도 빠졌으면 남은 칸을 모두 지워(L1~L3 비우고 통행 복구)
+    반쪽 가구가 보이지 않게 한다.
+    """
+    ts = pal.get_tileset(tileset)
+    if not ts:
+        return
+    for mt in (ts.get("multitile") or {}).values():
+        if not isinstance(mt, dict):
+            continue  # "_note" 등 메타 항목 건너뜀
+        tiles = mt.get("tiles")
+        if not tiles:
+            continue
+        mh, mw = len(tiles), len(tiles[0])
+        if mh == 1 and mw == 1:
+            continue  # 단일 타일은 반쪽 개념 없음
+        total = mh * mw
+        for layer in (1, 2, 3):
+            # 1) 온전한 배치 셀을 보호집합으로 수집(인접한 멀쩡한 가구 오제거 방지)
+            protected: set[tuple[int, int]] = set()
+            partials: list[list[tuple[int, int]]] = []
+            for y in range(height - mh + 1):
+                for x in range(width - mw + 1):
+                    matched = [
+                        (x + dx, y + dy)
+                        for dy in range(mh)
+                        for dx in range(mw)
+                        if base_of(get_tile(data, x + dx, y + dy, width, height, layer))
+                        == int(tiles[dy][dx])
+                    ]
+                    if len(matched) == total:
+                        protected.update(matched)  # 온전한 가구
+                    elif matched:
+                        partials.append(matched)  # 일부만 일치(반쪽 후보)
+            # 2) 보호되지 않은 반쪽 셀만 제거 — 가구를 지우면 평바닥이므로 통행(L5)도 복구
+            for matched in partials:
+                for cell in matched:
+                    if cell not in protected:
+                        set_tile(data, cell[0], cell[1], width, height, layer, 0)
+                        set_tile(data, cell[0], cell[1], width, height, 5, 0)
+
+
 def _place_objects(
     data: list[int],
     width: int,
@@ -375,6 +569,8 @@ def _place_objects(
     rng: random.Random,
     wall_adjacent: bool = False,
     floor_targets: set[int] | None = None,
+    avoid_cells: set[tuple[int, int]] | None = None,
+    block_avoid: set[tuple[int, int]] | None = None,
 ) -> None:
     """바이옴별 오브젝트(나무·풀·꽃 등)를 어울리는 지형 위(레이어1)에 확률 배치.
 
@@ -408,10 +604,15 @@ def _place_objects(
                 continue
             tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상에 포함
         layer = int(obj.get("layer", 1))  # palette 가 정한 레이어(L1~L3)에 배치
+        blocks = not obj.get("passable", True)  # 막힘 오브젝트만 통로(관절점) 회피
         for y in range(height):
             for x in range(width):
                 if get_tile(data, x, y, width, height, layer) != 0:
                     continue  # 그 레이어에 이미 오브젝트 있음
+                if avoid_cells and (x, y) in avoid_cells:
+                    continue  # 문·입구 통로엔 배치 안 함(길 막힘 방지)
+                if blocks and block_avoid and (x, y) in block_avoid:
+                    continue  # 막힘 오브젝트가 통로(관절점)를 막지 않게
                 if base_of(get_tile(data, x, y, width, height, 0)) not in tgt_set:
                     continue
                 if wall_adjacent and not near_wall(x, y):
@@ -433,6 +634,8 @@ def _place_multitile(
     layer: int = 1,
     cluster_seed: int | None = None,
     floor_targets: set[int] | None = None,
+    avoid_cells: set[tuple[int, int]] | None = None,
+    block_avoid: set[tuple[int, int]] | None = None,
 ) -> list[tuple[int, int]]:
     """바이옴별 멀티타일 오브젝트(나무 2x2 등)를 대상 지형 위에 확률 배치.
 
@@ -471,6 +674,8 @@ def _place_multitile(
                 fits = all(
                     base_of(get_tile(data, x + dx, y + dy, width, height, 0)) in tgt_set
                     and get_tile(data, x + dx, y + dy, width, height, layer) == 0
+                    and not (avoid_cells and (x + dx, y + dy) in avoid_cells)
+                    and not (block_avoid and blocked[dy][dx] and (x + dx, y + dy) in block_avoid)
                     for dy in range(mh)
                     for dx in range(mw)
                 )
@@ -583,8 +788,123 @@ def _place_wall_shadows(data: list[int], width: int, height: int, wall_bases: se
                 set_tile(data, rx, y, width, height, 4, shadow)
 
 
+def _place_dining_set(
+    data: list[int],
+    width: int,
+    height: int,
+    tileset: int,
+    rooms: list[tuple[int, int, int, int]],
+    rng: random.Random,
+    avoid_cells: set[tuple[int, int]] | None = None,
+    block_avoid: set[tuple[int, int]] | None = None,
+) -> None:
+    """충분히 큰 방 중앙에 식탁(dining_table) + 둘러싼 의자를 배치(큰 방 휑함 해소).
+
+    방 가운데에 식탁을 놓고 위·아래 줄에 의자를 깐다. 식탁/의자 자리가 비어 있을 때만
+    (겹침 방지). 작은 방·이미 가구가 찬 방은 건너뛴다.
+    """
+    dt = pal.get_multitile(tileset, "dining_table")
+    chair = pal.get_object(tileset, "chair")
+    if not dt or not chair:
+        return
+    tiles, blocked = dt["tiles"], dt["blocked"]
+    mh, mw = len(tiles), len(tiles[0])
+    chair_id = int(chair["base_id"])
+    for x0, y0, x1, y1 in rooms:
+        rw, rh = x1 - x0 + 1, y1 - y0 + 1
+        if rw < mw + 4 or rh < mh + 4 or rng.random() > 0.6:
+            continue  # 식탁+의자+여백이 들어갈 큰 방만, 확률적으로
+        cx = x0 + (rw - mw) // 2
+        cy = y0 + (rh - mh) // 2
+        spots = [(cx + dx, cy + dy) for dy in range(mh) for dx in range(mw)]
+        if any(get_tile(data, sx, sy, width, height, 1) != 0 for sx, sy in spots):
+            continue
+        if avoid_cells and any(sp in avoid_cells for sp in spots):
+            continue  # 입구·문 통로 위엔 식탁 안 둠
+        if block_avoid and any(sp in block_avoid for sp in spots):
+            continue  # 식탁(막힘)이 통로(관절점)를 막으면 배치 안 함
+        for dy in range(mh):
+            for dx in range(mw):
+                set_tile(data, cx + dx, cy + dy, width, height, 1, int(tiles[dy][dx]))
+                if blocked[dy][dx]:
+                    set_tile(data, cx + dx, cy + dy, width, height, 5, 1)
+        for dx in range(mw):  # 위·아래 줄에 의자(통로는 피함)
+            up, down = (cx + dx, cy - 1), (cx + dx, cy + mh)
+            if cy - 1 >= y0 and get_tile(data, *up, width, height, 1) == 0 and not (
+                block_avoid and up in block_avoid
+            ):
+                set_tile(data, cx + dx, cy - 1, width, height, 1, chair_id)
+            if cy + mh <= y1 and get_tile(data, *down, width, height, 1) == 0 and not (
+                block_avoid and down in block_avoid
+            ):
+                set_tile(data, cx + dx, cy + mh, width, height, 1, chair_id)
+
+
+def _place_kitchen(
+    data: list[int],
+    width: int,
+    height: int,
+    tileset: int,
+    rooms: list[tuple[int, int, int, int]],
+    rng: random.Random,
+) -> tuple[int, int, int, int] | None:
+    """방 하나를 부엌으로 정해 위쪽 벽 아래에 부엌 카운터(kitchen_counter 1x4)를 놓는다.
+
+    어느 방이든 '윗칸이 벽이고 가로로 비어 있는 바닥 줄'을 찾아 카운터를 붙인다.
+    반환: 부엌으로 쓴 방 영역(없으면 None) — 호출자가 그 방은 커튼 대신 창문만 두게 쓴다.
+    """
+    kc = pal.get_multitile(tileset, "kitchen_counter")
+    if not kc:
+        return None
+    tiles, blocked = kc["tiles"], kc["blocked"]
+    mw = len(tiles[0])  # 1x4 가로
+    for x0, y0, x1, y1 in rng.sample(rooms, len(rooms)):
+        for yy in range(y0, y1 + 1):
+            for kx in range(x0, x1 - mw + 2):
+                if all(
+                    get_tile(data, kx + dx, yy, width, height, 1) == 0
+                    and get_tile(data, kx + dx, yy, width, height, 5) == 0  # 바닥(통행 가능)
+                    and yy > 0
+                    and get_tile(data, kx + dx, yy - 1, width, height, 5) == 1  # 윗칸이 벽
+                    for dx in range(mw)
+                ):
+                    for dx in range(mw):
+                        set_tile(data, kx + dx, yy, width, height, 1, int(tiles[0][dx]))
+                        if blocked[0][dx]:
+                            set_tile(data, kx + dx, yy, width, height, 5, 1)
+                    return (x0, y0, x1, y1)
+    return None
+
+
+def _place_on_furniture(data: list[int], width: int, height: int, tileset: int, rng: random.Random) -> None:
+    """작은 소품을 어울리는 가구 위(L2)에 올린다 — 침대 위 곰인형, 책장 위 책더미.
+
+    바닥에 흩어지면 어색한 소품을 가구 타일 위(상위 레이어 L2)에 확률적으로 얹는다.
+    침대 앵커(bed_large 좌상=169), 책장 빈선반(bookshelf2 위칸=152) 기준.
+    """
+    teddy = pal.get_object(tileset, "teddy")
+    book = pal.get_object(tileset, "book_stack")
+    bed = pal.get_multitile(tileset, "bed_large")
+    shelf = pal.get_multitile(tileset, "bookshelf2")
+    bed_anchor = int(bed["tiles"][0][0]) if bed else -1
+    shelf_top = int(shelf["tiles"][0][0]) if shelf else -1
+    for y in range(height):
+        for x in range(width):
+            b = base_of(get_tile(data, x, y, width, height, 1))
+            if teddy and b == bed_anchor and rng.random() < 0.5:
+                set_tile(data, x, y, width, height, 2, int(teddy["base_id"]))  # 침대 위 곰인형
+            elif book and b == shelf_top and rng.random() < 0.4:
+                set_tile(data, x, y, width, height, 2, int(book["base_id"]))  # 책장 위 책더미
+
+
 def _place_wall_decor(
-    data: list[int], width: int, height: int, tileset: int, rng: random.Random, density: float = 0.16
+    data: list[int],
+    width: int,
+    height: int,
+    tileset: int,
+    rng: random.Random,
+    density: float = 0.16,
+    kitchen_room: tuple[int, int, int, int] | None = None,
 ) -> None:
     """벽에 장식을 겹쳐 건다(L1 오버레이 — 벽 텍스처는 그대로 비친다).
 
@@ -599,10 +919,14 @@ def _place_wall_decor(
     wall = pal.get_tile_id(tileset, "wall")
     wall_top = pal.get_tile_id(tileset, "wall_top")
     void = pal.get_tile_id(tileset, "void")
-    shield = pal.get_object(tileset, "shield")
-    outer = [pal.get_multitile(tileset, n) for n in ("window", "stained_glass")]
+    # 벽 1칸짜리 단일 벽장식(인물화·거울·방패) — 벽면 L1 에 건다.
+    decor_objs = [pal.get_object(tileset, n) for n in ("portrait", "wall_mirror", "shield")]
+    decor_objs = [o for o in decor_objs if o]
+    painting_wide = pal.get_multitile(tileset, "painting_wide")  # 2칸 가로 풍경화
+    # 창문류(커튼 달린 창 포함)는 바깥과 면한 외벽에만 — 밖이 보여야 자연스럽다.
+    outer = [pal.get_multitile(tileset, n) for n in ("window", "stained_glass", "curtain_window")]
     outer = [d for d in outer if d]
-    inner = [pal.get_multitile(tileset, n) for n in ("tapestry", "curtain_window")]
+    inner = [pal.get_multitile(tileset, n) for n in ("tapestry",)]  # 벽걸이만 내벽
     inner = [d for d in inner if d]
     if not wall:
         return
@@ -611,13 +935,30 @@ def _place_wall_decor(
             if base_of(get_tile(data, x, y, width, height, 0)) != wall:
                 continue  # 앞면 벽(face)에만
             if base_of(get_tile(data, x, y - 1, width, height, 0)) != wall_top:
-                # 벽 1칸 → 방패 단일 (L1)
-                if shield and get_tile(data, x, y, width, height, 1) == 0 and rng.random() < density * 0.5:
-                    set_tile(data, x, y, width, height, 1, int(shield["base_id"]))
+                # 벽 1칸(천장 없는 face). 오른쪽도 같은 1칸 벽이면 2칸 풍경화, 아니면 단일 장식
+                if get_tile(data, x, y, width, height, 1) != 0:
+                    continue
+                rfx = x + 1
+                right_face = (
+                    rfx < width
+                    and base_of(get_tile(data, rfx, y, width, height, 0)) == wall
+                    and base_of(get_tile(data, rfx, y - 1, width, height, 0)) != wall_top
+                    and get_tile(data, rfx, y, width, height, 1) == 0
+                )
+                if painting_wide and right_face and rng.random() < density * 0.4:
+                    t = painting_wide["tiles"][0]
+                    set_tile(data, x, y, width, height, 1, int(t[0]))  # 풍경화 왼쪽
+                    set_tile(data, rfx, y, width, height, 1, int(t[1]))  # 오른쪽
+                elif decor_objs and rng.random() < density * 0.5:
+                    set_tile(data, x, y, width, height, 1, int(rng.choice(decor_objs)["base_id"]))
                 continue
-            # 벽 2칸. 천장 위가 집 밖(void)이면 외벽 → 창문, 아니면 내벽 → 태피스트리
+            # 벽 2칸. 천장 위가 집 밖(void)이면 외벽 → 창문, 아니면 내벽 → 태피스트리.
+            # 단 부엌 방은 커튼/태피스트리 없이 창문만 둔다(사용자 요청).
             above = base_of(get_tile(data, x, y - 2, width, height, 0)) if y - 2 >= 0 else void
-            pool = outer if (void and above == void) else inner
+            in_kitchen = kitchen_room is not None and (
+                kitchen_room[0] <= x <= kitchen_room[2] and kitchen_room[1] <= y <= kitchen_room[3]
+            )
+            pool = outer if ((void and above == void) or in_kitchen) else inner
             if not pool:
                 continue
             if get_tile(data, x, y - 1, width, height, 1) != 0 or get_tile(data, x, y, width, height, 1) != 0:
@@ -713,9 +1054,12 @@ def generate_terrain_map(
     if objects:
         rng = random.Random(s + 99)
         # L1 풀밭 텍스처(샘플맵 L1 본체) → L3 나무 군집 → L2/L3 단일 식생 순.
+        # 막힘 오브젝트(나무·바위)는 관절점(통로)을 막지 않도록 _blocking_avoid 회피.
         _place_ground_decor(data, w, h, tid, biome, s + 5, autotile=autotile)
-        _place_multitile(data, w, h, tid, biome, rng, layer=3, cluster_seed=s + 41)  # 나무 숲(L3)
-        _place_objects(data, w, h, tid, biome, rng)  # 단일 식생(palette layer L2/L3)
+        ba = _blocking_avoid(data, w, h)  # 나무 배치 전 통로(관절점) 계산
+        _place_multitile(data, w, h, tid, biome, rng, layer=3, cluster_seed=s + 41, block_avoid=ba)
+        ba = _blocking_avoid(data, w, h)  # 나무 반영 후 재계산
+        _place_objects(data, w, h, tid, biome, rng, block_avoid=ba)  # 단일 식생(막힘은 통로 회피)
     return data
 
 
@@ -832,8 +1176,11 @@ def generate_dungeon_map(
     if objects:
         biome = cfg["objects"] if cfg else "dungeon"
         rng = random.Random(s + 99)
-        _place_multitile(data, w, h, 4, biome, rng)
-        _place_objects(data, w, h, 4, biome, rng)
+        # 던전 복도(1칸 통로)를 막힘 오브젝트가 막지 않도록 관절점 회피
+        ba = _blocking_avoid(data, w, h)
+        _place_multitile(data, w, h, 4, biome, rng, block_avoid=ba)
+        ba = _blocking_avoid(data, w, h)
+        _place_objects(data, w, h, 4, biome, rng, block_avoid=ba)
     return data
 
 
@@ -929,6 +1276,20 @@ def generate_house_map(
     for x, y in doors:
         set_tile(data, x, y, w, h, 0, floor)  # 문 = 내벽 뚫기
 
+    # 집 아래 외벽 가운데에 입구(벽 없는 통로) — 플레이어가 밖에서 들어오는 진입점.
+    # 아래 외벽부터 위로 첫 방 바닥을 만날 때까지 floor 로 뚫어 통로를 만든다.
+    entry_x = (mx0 + mx1) // 2
+    entry_cells: list[tuple[int, int]] = []
+    for yy in range(my1, my0 - 1, -1):
+        prev = base_of(get_tile(data, entry_x, yy, w, h, 0))
+        set_tile(data, entry_x, yy, w, h, 0, floor)
+        entry_cells.append((entry_x, yy))
+        if yy < my1 and prev == base_of(floor):
+            break  # 방 바닥에 닿으면 통로 완성
+
+    # 통로 막힘 방지: 문·입구 칸에는 가구를 두지 않는다(좁은 길을 막지 않게)
+    avoid: set[tuple[int, int]] = set(doors) | set(entry_cells)
+
     # 방마다 바닥 종류를 풀에서 골라 다양화(마루·나무결·돌·벽돌·타일) + 일부 방 중앙에 카펫 러그
     floor_pool = [base_floor]
     for nm in ("wood_floor2", "stone_floor", "brick_floor", "fancy_tile", "tile_floor"):
@@ -956,15 +1317,17 @@ def generate_house_map(
     floors = set(floor_pool)
     if carpet:
         floors.add(carpet)
+    # 문·입구 칸은 면(face)으로 막으면 안 됨(통로 끊김) — 벽 2칸일 때 보존
+    passage = set(doors) | set(entry_cells)
     wall_height = rng.choice((1, 2))
     for y in range(h):
         for x in range(w):
             if base_of(get_tile(data, x, y, w, h, 0)) == wall_top:
                 below = base_of(get_tile(data, x, y + 1, w, h, 0)) if y + 1 < h else -1
                 if below in floors:
-                    if wall_height == 2 and y + 1 < h:
+                    if wall_height == 2 and y + 1 < h and (x, y + 1) not in passage:
                         set_tile(data, x, y + 1, w, h, 0, wall)  # 천장 아래 칸=면(벽 2칸)
-                    else:
+                    elif wall_height == 1:
                         set_tile(data, x, y, w, h, 0, wall)  # 천장을 면으로(벽 1칸)
 
     impass = set(pal.impassable_ids(tileset)) | {wall, wall_top}
@@ -973,13 +1336,29 @@ def generate_house_map(
     if objects:
         orng = random.Random(s + 99)
         ft = {b for b in floor_pool}  # 모든 방 바닥에 가구가 놓이게(카펫 러그는 제외해 비움)
-        _place_wall_decor(data, w, h, tileset, orng)  # 벽에 창문·태피스트리·커튼
+        kitchen_room = _place_kitchen(data, w, h, tileset, rooms, orng)  # 한 방을 부엌으로
+        _place_wall_decor(data, w, h, tileset, orng, kitchen_room=kitchen_room)  # 부엌은 창문만
+        # 막힘 가구·식탁이 문·통로(관절점)를 막지 않도록 _blocking_avoid 적용
+        ba = _blocking_avoid(data, w, h)
+        _place_dining_set(data, w, h, tileset, rooms, orng, avoid, block_avoid=ba)  # 식탁세트
+        ba = _blocking_avoid(data, w, h)
         _place_multitile(
-            data, w, h, tileset, biome, orng, against_wall=True, floor_targets=ft
+            data, w, h, tileset, biome, orng, against_wall=True, floor_targets=ft,
+            avoid_cells=avoid, block_avoid=ba,
         )  # 가구 벽에 등 댐
+        ba = _blocking_avoid(data, w, h)
         _place_objects(
-            data, w, h, tileset, biome, orng, wall_adjacent=True, floor_targets=ft
+            data, w, h, tileset, biome, orng, wall_adjacent=True, floor_targets=ft,
+            avoid_cells=avoid, block_avoid=ba,
         )  # 단일 가구 벽 따라
+        _place_on_furniture(data, w, h, tileset, orng)  # 침대 위 곰인형·책장 위 책
+    # 분리된 영역(문 막힘·가구 막힘·고립 방)을 벽 1칸 뚫어 연결 — 모든 방 도달 보장.
+    _connect_regions(data, w, h, base_floor)
+    # 연결 시 가구를 관통해 뚫었으면 반쪽만 남은 가구를 통째로 제거(반쪽 침대·식탁 방지).
+    if objects:
+        _clean_partial_multitiles(data, w, h, tileset)
+    # 못 잇는 작은 고립 칸(문 없는 1칸 방 등)은 벽으로 메워 '섬'을 없앤다.
+    _fill_isolated_pockets(data, w, h, wall_top)
     # 그림자는 건물 벽에만(가구 제외). 벽장식(창문 등)도 벽이므로 wall_bases 에 포함.
     wall_bases = {wall, wall_top}
     for n in ("window", "tapestry", "curtain_window", "stained_glass"):

@@ -376,6 +376,48 @@ def test_house_deterministic():
     assert a == b
 
 
+def _all_connected(d, w, h):
+    walk = {(x, y) for y in range(h) for x in range(w) if get_tile(d, x, y, w, h, 5) == 0}
+    if not walk:
+        return True
+    start = next(iter(walk))
+    seen, stack = {start}, [start]
+    while stack:
+        cx, cy = stack.pop()
+        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            t = (cx + dx, cy + dy)
+            if t in walk and t not in seen:
+                seen.add(t)
+                stack.append(t)
+    return len(seen) == len(walk)
+
+
+def test_house_connected_with_furniture():
+    """가구 배치(objects=True) 후에도 모든 바닥이 연결된다 — 통로 막힘 방지 + 복구."""
+    for seed in (5, 7, 13, 17):
+        d = generate_house_map(MapDims(28, 22, 3), seed=seed)
+        assert _all_connected(d, 28, 22), f"seed{seed}: 집이 분리됨(통로 막힘)"
+
+
+def test_dungeon_connected_with_objects():
+    """던전 오브젝트(바위·종유석) 배치 후에도 복도가 막히지 않아 전부 연결된다."""
+    for seed in (1, 3, 5):
+        d = generate_dungeon_map(MapDims(40, 30, 4), seed=seed)
+        assert _all_connected(d, 40, 30), f"seed{seed}: 던전 통로 막힘"
+
+
+def test_house_has_entrance():
+    """집 아래 외벽 가운데에 입구(벽 없는 통로)가 열려 있다(플레이어 진입점)."""
+    w, h = 20, 16
+    d = generate_house_map(MapDims(w, h, 3), seed=4)
+    floor_bases = {
+        pal.get_tile_id(3, n)
+        for n in ("floor", "wood_floor2", "stone_floor", "brick_floor", "fancy_tile", "tile_floor", "carpet")
+    }
+    ex = (1 + (w - 2)) // 2
+    assert base_of(get_tile(d, ex, h - 2, w, h, 0)) in floor_bases  # 아래 외벽 가운데 열림
+
+
 def test_house_floor_and_furniture_variety():
     """집에 여러 바닥 종류와 여러 가구가 배치된다(예쁜 방 — 다양성 보증)."""
     w, h = 30, 24
@@ -410,11 +452,16 @@ def test_interior_wall_shadows():
 
 
 def test_interior_furniture_against_wall():
-    """멀티타일 가구(침대·책장·기둥)는 윗칸이 벽인 위치에 배치된다."""
+    """멀티타일 가구는 윗칸이 벽인 위치(against_wall)에 배치된다."""
+    from agent.generation.mapgen.palette_mapgen import _BIOME_MULTITILE
+
     d = generate_interior_map(MapDims(40, 32, 3), seed=5)
     placed = 0
-    for name in ("bed", "bookshelf", "pillar"):
-        head = pal.get_multitile(3, name)["tiles"][0][0]
+    for name, _target, _density in _BIOME_MULTITILE["interior"]:
+        mt = pal.get_multitile(3, name)
+        if not mt:
+            continue
+        head = mt["tiles"][0][0]
         for y in range(1, 32):
             for x in range(40):
                 if get_tile(d, x, y, 40, 32, 1) == head:

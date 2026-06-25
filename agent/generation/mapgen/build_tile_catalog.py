@@ -60,6 +60,33 @@ def collect_usage(maps_dir: Path) -> dict[int, dict[int, Counter]]:
     return usage
 
 
+def collect_sheet_tiles(base_game: Path) -> dict[int, set[int]]:
+    """tileset_id → 시트에 비투명으로 실제 존재하는 B~E(0~1023) tile_id 전수.
+
+    samplemaps 사용 여부와 무관 — 타일셋 이미지 시트를 직접 스캔한다(선인장·부엌가구처럼
+    샘플맵에 안 쓰인 오브젝트도 포함). B~E 좌표 공식은 tile_renderer._draw_tile 과 동일.
+    """
+    from agent.generation.mapgen.tile_renderer import load_tileset_images
+
+    result: dict[int, set[int]] = {}
+    for tid in (1, 2, 3, 4, 5, 6):
+        imgs = load_tileset_images(tid, base_game)
+        found: set[int] = set()
+        for tile_id in range(1024):
+            si = 5 + tile_id // 256
+            if si >= len(imgs) or imgs[si] is None:
+                continue
+            sheet = imgs[si]
+            sx = ((tile_id // 128 % 2) * 8 + tile_id % 8) * 48
+            sy = (tile_id % 256 // 8 % 16) * 48
+            if sx + 48 > sheet.width or sy + 48 > sheet.height:
+                continue
+            if sheet.crop((sx, sy, sx + 48, sy + 48)).split()[3].getextrema()[1] > 0:
+                found.add(tile_id)  # 알파 최대 >0 = 비투명 타일 존재
+        result[tid] = found
+    return result
+
+
 def _avg_color(base_id: int, tid: int, base_game: Path, tmp: Path) -> tuple[int, int, int]:
     """타일을 3x3 렌더해 중앙 픽셀 평균색 추출."""
     from PIL import Image
@@ -96,13 +123,17 @@ def build_catalog(base_game: Path) -> dict:
         if isinstance(ts, dict) and "id" in ts and "flags" in ts
     }
     usage = collect_usage(base_game / "samplemaps")
+    sheets = collect_sheet_tiles(base_game)  # 시트 전수(B~E) — samplemaps 미사용 타일도 포함
     tmp = Path(tempfile.gettempdir())
 
     catalog: dict = {"schema_version": 1, "_comment": "타일 전수 카탈로그(자동생성). build_tile_catalog.py", "tilesets": {}}
-    for tid in sorted(usage):
+    for tid in sorted(set(usage) | set(sheets)):
         f = flags.get(tid, [])
         entries = []
-        for base_id, layer_counts in sorted(usage[tid].items()):
+        # 카탈로그 대상 = samplemaps 사용 타일 ∪ 시트 비투명 전수(B~E). count=0 은 미사용 타일.
+        all_ids = set(usage.get(tid, {})) | sheets.get(tid, set())
+        for base_id in sorted(all_ids):
+            layer_counts = usage.get(tid, {}).get(base_id, Counter())
             total = sum(layer_counts.values())
             passable = (f[base_id] & 0x0F) == 0 if base_id < len(f) else None
             star = bool(f[base_id] & 0x10) if base_id < len(f) else False

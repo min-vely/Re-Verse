@@ -163,6 +163,42 @@
           "layer": 3,
           "passable": true,
           "note": "둥근 관목/덤불 (샘플맵 L3 x172, star 통과). 상위 데코 레이어."
+        },
+        "cactus": {
+          "base_id": 238,
+          "layer": 1,
+          "passable": false,
+          "note": "기둥 선인장(사막, 막힘)"
+        },
+        "cycad": {
+          "base_id": 246,
+          "layer": 1,
+          "passable": false,
+          "note": "소철/고사리(막힘). 렌더 재검증."
+        },
+        "haystack": {
+          "base_id": 248,
+          "layer": 1,
+          "passable": false,
+          "note": "건초 더미(막힘). 렌더 재검증."
+        },
+        "flower_bush": {
+          "base_id": 250,
+          "layer": 2,
+          "passable": true,
+          "note": "흰꽃 덤불(통과). L2 데코."
+        },
+        "lily_pad": {
+          "base_id": 253,
+          "layer": 1,
+          "passable": false,
+          "note": "수련 잎(물 위)"
+        },
+        "lotus": {
+          "base_id": 254,
+          "layer": 1,
+          "passable": false,
+          "note": "분홍 연꽃(물 위)"
         }
       },
       "ground_decor": {
@@ -235,6 +271,11 @@
             ]
           ],
           "note": "눈 덮인 나무 2x2"
+        },
+        "palm_tree": {
+          "tiles": [[236], [244]],
+          "blocked": [[false], [true]],
+          "note": "야자수 1x2 (위=잎 통과, 아래=기둥 막힘). 렌더 재검증."
         }
       }
     },
@@ -336,6 +377,84 @@
           "layer": 3,
           "passable": false,
           "note": "방패 벽장식(단일, 막힘). 벽면에 거는 장식"
+        },
+        "iron_grate": {
+          "base_id": 246,
+          "layer": 1,
+          "passable": true,
+          "note": "쇠창살/철망(STAR 통과). 집 가구 아님 — 던전 감옥용. 일반 집 배치 제외."
+        },
+        "pottery": {
+          "base_id": 217,
+          "layer": 1,
+          "passable": false,
+          "note": "큰 항아리(막힘)"
+        },
+        "bucket": {
+          "base_id": 219,
+          "layer": 1,
+          "passable": false,
+          "note": "나무 양동이/물통(막힘)"
+        },
+        "book_stack": {
+          "base_id": 320,
+          "layer": 1,
+          "passable": false,
+          "note": "책 더미(막힘)"
+        },
+        "potion": {
+          "base_id": 356,
+          "layer": 1,
+          "passable": false,
+          "note": "물약병(막힘)"
+        },
+        "teddy": {
+          "base_id": 368,
+          "layer": 1,
+          "passable": false,
+          "note": "곰 인형(막힘)"
+        },
+        "basket": {
+          "base_id": 360,
+          "layer": 1,
+          "passable": false,
+          "note": "과일/빵 바구니(막힘)"
+        },
+        "plant_pot": {
+          "base_id": 342,
+          "layer": 1,
+          "passable": false,
+          "note": "화분 식물(막힘)"
+        },
+        "food_plate": {
+          "base_id": 288,
+          "layer": 1,
+          "passable": false,
+          "note": "음식 접시(식탁 위 데코)"
+        },
+        "wine": {
+          "base_id": 266,
+          "layer": 1,
+          "passable": false,
+          "note": "와인병(식탁 위 데코)"
+        },
+        "portrait": {
+          "base_id": 132,
+          "layer": 3,
+          "passable": false,
+          "note": "인물화 액자(단일 1칸, 벽장식)"
+        },
+        "swords": {
+          "base_id": 83,
+          "layer": 3,
+          "passable": false,
+          "note": "교차 검 벽장식"
+        },
+        "wall_mirror": {
+          "base_id": 84,
+          "layer": 3,
+          "passable": false,
+          "note": "벽거울(단일)"
         }
       },
       "multitile": {
@@ -476,6 +595,86 @@
             ]
           ],
           "note": "스테인드글라스 창 1x2(세로). 벽면 장식 — 71→D→79 x46"
+        },
+        "bed_large": {
+          "tiles": [[169, 170], [177, 178]],
+          "blocked": [[true, true], [true, true]],
+          "note": "2x2 더블침대(나무프레임+베개2+주황줄무늬이불). 샘플맵 인접 169→R→170,169→D→177,177→R→178 로 확정."
+        },
+        "sofa": {
+          "tiles": [[96, 97, 98, 99, 100], [104, 105, 106, 107, 108]],
+          "blocked": [[true, true, true, true, true], [true, true, true, true, true]],
+          "note": "5x2 화려한 빨강 소파. 렌더 검증."
+        },
+        "kitchen_counter": {
+          "tiles": [[200, 201, 202, 203]],
+          "blocked": [[true, true, true, true]],
+          "note": "1x4 부엌 카운터(오븐+싱크대+조리대+찬장). 렌더 검증."
+        },
+        "cabinet": {
+          "tiles": [[136, 137], [144, 145]],
+          "blocked": [[true, true], [true, true]],
+          "note": "2x2 나무 찬장/캐비닛. 렌더 검증."
+        },
+        "clock": {
+          "tiles": [[117], [125]],
+          "blocked": [[true], [true]],
+          "note": "1x2 괘종시계. 렌더 검증."
+        },
+        "window_wood": {
+          "tiles": [[64, 65], [72, 73]],
+          "blocked": [[true, true], [true, true]],
+          "note": "2x2 나무 창문(벽면). 렌더 검증."
+        },
+        "green_curtain": {
+          "tiles": [[66, 67], [74, 75]],
+          "blocked": [[true, true], [true, true]],
+          "note": "2x2 녹색 커튼 창문(벽면). 렌더 검증."
+        },
+        "door": {
+          "tiles": [[101, 102], [109, 110]],
+          "blocked": [[true, true], [false, false]],
+          "note": "2x2 문(아래 칸 통과 — 문지방). 렌더 검증."
+        },
+        "bookshelf2": {
+          "tiles": [[152, 153], [160, 161]],
+          "blocked": [[false, false], [true, true]],
+          "note": "2x2 책장(위=빈선반 통과, 아래=책 막힘). 렌더 검증."
+        },
+        "piano": {
+          "tiles": [[205, 206, 207], [213, 214, 215]],
+          "blocked": [[true, true, true], [true, true, true]],
+          "note": "3x2 그랜드 피아노. 렌더 검증."
+        },
+        "organ": {
+          "tiles": [[222, 223], [230, 231]],
+          "blocked": [[true, true], [true, true]],
+          "note": "2x2 파이프오르간. 렌더 검증."
+        },
+        "marble_pillar": {
+          "tiles": [[24], [32], [40], [48]],
+          "blocked": [[false], [true], [true], [true]],
+          "note": "4x1 큰 대리석 기둥(맨위 통과). 렌더 검증."
+        },
+        "mirror": {
+          "tiles": [[118], [126]],
+          "blocked": [[true], [true]],
+          "note": "1x2 금테 거울(벽면). 렌더 검증."
+        },
+        "dining_table": {
+          "tiles": [[123, 124]],
+          "blocked": [[true, true]],
+          "note": "1x2 식탁(보라 식탁보+화분탁자, 큰 방 중앙용). 130~132는 액자라 제외(재검증)."
+        },
+        "painting_wide": {
+          "tiles": [[130, 131]],
+          "blocked": [[true, true]],
+          "note": "2x1 풍경화 액자(가로, 벽면). 130→R→131 x25 검증."
+        },
+        "fireplace": {
+          "tiles": [[194, 195, 196]],
+          "blocked": [[true, true, true]],
+          "note": "1x3 벽돌 벽난로. 렌더 검증."
         }
       }
     },
