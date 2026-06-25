@@ -84,23 +84,36 @@ def _water_id(biome: str, tid: int) -> int:
 # 바이옴 → [(오브젝트 이름, 배치 대상 지형, 밀도)]. 오브젝트는 palette objects 에 정의.
 _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
     # 나무(184~186)·덤불(176)은 멀티타일이라 제외. 단일타일 식생·바위로만 구성.
+    # 레이어 분산(palette object layer): grass_tuft/flower/bush_clump=L2, reed/shrub/rock=L3.
+    # 풀밭 텍스처(L1)는 _GROUND_DECOR 가 따로 깐다. 단일 식생은 종류·밀도를 늘려 다양화.
     "grassland": [
-        ("grass_tuft", "grass", 0.060),
-        ("flower", "grass", 0.030),
+        ("grass_tuft", "grass", 0.100),
+        ("flower", "grass", 0.050),
+        ("bush_clump", "grass", 0.040),
+        ("reed", "grass", 0.030),
+        ("shrub", "grass", 0.025),
         ("berry_bush", "grass", 0.015),
-        ("rock", "grass", 0.008),
+        ("rock", "grass", 0.010),
     ],
-    # 오아시스(grass)엔 풀·꽃, 사막(sand)엔 죽은 나무·바위가 드물게
+    # 오아시스(grass)엔 풀·꽃·관목, 사막(sand)엔 죽은 나무·바위가 드물게
     "desert": [
-        ("grass_tuft", "grass", 0.080),
-        ("flower", "grass", 0.025),
-        ("dead_tree", "sand", 0.012),
-        ("desert_rock", "sand", 0.010),
+        ("grass_tuft", "grass", 0.100),
+        ("flower", "grass", 0.030),
+        ("bush_clump", "grass", 0.040),
+        ("shrub", "grass", 0.025),
+        ("dead_tree", "sand", 0.014),
+        ("desert_rock", "sand", 0.012),
     ],
-    "snow": [("rock", "snow", 0.010)],
+    "snow": [
+        ("bush_clump", "snow", 0.020),
+        ("rock", "snow", 0.012),
+    ],
     "wetland": [
-        ("grass_tuft", "grass", 0.050),
-        ("flower", "grass", 0.025),
+        ("grass_tuft", "grass", 0.090),
+        ("flower", "grass", 0.030),
+        ("bush_clump", "grass", 0.040),
+        ("reed", "grass", 0.050),
+        ("shrub", "grass", 0.020),
     ],
     # 던전(tileset 4): 방 바닥(floor) 위에 바위·종유석
     "dungeon": [
@@ -132,10 +145,12 @@ _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
     "moss": [("pebbles", "moss_floor", 0.025), ("rock", "moss_floor", 0.015)],
     "dark": [("pebbles", "dark_floor", 0.020), ("rock", "dark_floor", 0.015)],
     # 실내(tileset 3): 마루 위에 가구
+    # 벽 인접(wall_adjacent)으로만 배치돼 후보가 적어 밀도를 높게 잡는다. rug 는 카펫 러그
+    # 영역과 중복이라 제외. table/barrel/chair 는 막힘/통과 섞여 벽 따라 정돈된다.
     "interior": [
-        ("chair", "floor", 0.030),
-        ("rug", "floor", 0.020),
-        ("barrel", "floor", 0.020),
+        ("table", "floor", 0.06),
+        ("barrel", "floor", 0.10),
+        ("chair", "floor", 0.10),
     ],
     # SF외곽(tileset 5): 도로·포장에 소화전
     "city": [
@@ -153,10 +168,11 @@ _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
 
 # 바이옴 → [(멀티타일 이름, 대상 지형, 밀도)]. 멀티타일은 palette multitile 에 정의.
 _BIOME_MULTITILE: dict[str, list[tuple[str, str, float]]] = {
-    "grassland": [("tree", "grass", 0.012)],
-    "desert": [("tree", "grass", 0.020)],  # 오아시스 나무
-    "snow": [("snow_tree", "snow", 0.015)],
-    "wetland": [("tree", "grass", 0.010)],
+    # 야외 나무는 L3 군집(_place_multitile cluster_seed)으로 숲처럼 모이게 배치한다.
+    "grassland": [("tree", "grass", 0.060)],
+    "desert": [("tree", "grass", 0.040)],  # 오아시스 나무
+    "snow": [("snow_tree", "snow", 0.050)],
+    "wetland": [("tree", "grass", 0.045)],
     "dungeon": [("ice_crystal", "floor", 0.010)],
     # 벽쪽 배치(against_wall)라 후보가 적어 밀도를 높게 잡는다
     "interior": [
@@ -170,6 +186,16 @@ _BIOME_MULTITILE: dict[str, list[tuple[str, str, float]]] = {
         ("fence", "grass", 0.015),
     ],
     "sf_interior": [("railing", "tile_floor", 0.015)],
+}
+
+# 바이옴 → [(데코 이름, 대상 지형, 덮는 비율 0~1)]. ground_decor 의 A2 풀밭 텍스처를
+# 바닥(L0) 위 L1 에 노이즈 패치로 겹쳐 깐다. 샘플맵 L1 의 본체(긴풀 등). coverage 가
+# 클수록 넓게 덮는다. 같은 칸엔 먼저 깐 데코가 우선(겹침 방지).
+_GROUND_DECOR: dict[str, list[tuple[str, str, float]]] = {
+    "grassland": [("tall_grass", "grass", 0.45), ("grass_dark", "grass", 0.20)],
+    "desert": [("dry_grass", "sand", 0.35), ("tall_grass", "grass", 0.55)],
+    "snow": [("snow_patch", "snow", 0.30)],
+    "wetland": [("tall_grass", "grass", 0.55), ("grass_dark", "grass", 0.25)],
 }
 
 
@@ -341,30 +367,57 @@ def _relax_transitions(idx: list[list[int]], width: int, height: int) -> None:
 
 
 def _place_objects(
-    data: list[int], width: int, height: int, tid: int, biome: str, rng: random.Random
+    data: list[int],
+    width: int,
+    height: int,
+    tid: int,
+    biome: str,
+    rng: random.Random,
+    wall_adjacent: bool = False,
+    floor_targets: set[int] | None = None,
 ) -> None:
     """바이옴별 오브젝트(나무·풀·꽃 등)를 어울리는 지형 위(레이어1)에 확률 배치.
 
     통행 불가 오브젝트(나무 등)는 레이어5도 막는다. 이미 레이어1이 찬 칸은 건너뛴다.
+    wall_adjacent=True 면 상하좌우 중 하나가 통행 불가(벽·가구)인 칸에만 배치(실내 가구
+    정돈 — 방 한가운데 흩어지지 않고 벽을 따라 놓인다).
+    floor_targets 가 주어지면 spec 의 target 지형 대신 그 base_id 집합(여러 바닥 종류)을
+    배치 대상으로 쓴다 — 집 모델처럼 방마다 바닥이 다를 때 모든 바닥에 가구가 놓이게.
     """
     specs = _BIOME_OBJECTS.get(biome, [])
     if not specs:
         return
     terr_ids = _terr_ids(tid)
+
+    def near_wall(x: int, y: int) -> bool:
+        for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height and get_tile(data, nx, ny, width, height, 5) == 1:
+                return True
+        return False
+
     for name, target, density in specs:
         obj = pal.get_object(tid, name)
-        tgt = terr_ids.get(target)
-        if not obj or tgt is None:
+        if not obj:
             continue
-        tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상에 포함
+        if floor_targets is not None:
+            tgt_set = floor_targets
+        else:
+            tgt = terr_ids.get(target)
+            if tgt is None:
+                continue
+            tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상에 포함
+        layer = int(obj.get("layer", 1))  # palette 가 정한 레이어(L1~L3)에 배치
         for y in range(height):
             for x in range(width):
-                if get_tile(data, x, y, width, height, 1) != 0:
-                    continue  # 이미 오브젝트 있음
+                if get_tile(data, x, y, width, height, layer) != 0:
+                    continue  # 그 레이어에 이미 오브젝트 있음
                 if base_of(get_tile(data, x, y, width, height, 0)) not in tgt_set:
                     continue
+                if wall_adjacent and not near_wall(x, y):
+                    continue  # 벽 옆이 아니면 건너뜀(가구 정돈)
                 if rng.random() < density:
-                    set_tile(data, x, y, width, height, 1, int(obj["base_id"]))
+                    set_tile(data, x, y, width, height, layer, int(obj["base_id"]))
                     if not obj.get("passable", True):
                         set_tile(data, x, y, width, height, 5, 1)
 
@@ -377,30 +430,47 @@ def _place_multitile(
     biome: str,
     rng: random.Random,
     against_wall: bool = False,
-) -> None:
+    layer: int = 1,
+    cluster_seed: int | None = None,
+    floor_targets: set[int] | None = None,
+) -> list[tuple[int, int]]:
     """바이옴별 멀티타일 오브젝트(나무 2x2 등)를 대상 지형 위에 확률 배치.
 
-    NxM 칸이 전부 대상 지형 + 레이어1 비어있을 때만 배치(겹침 방지).
+    NxM 칸이 전부 대상 지형 + 해당 layer 가 비어있을 때만 배치(겹침 방지).
     blocked=true 칸은 레이어5도 막는다.
     against_wall=True 면 가구 윗줄(y-1)이 전부 벽(통행불가)인 위치에만 배치(벽에 등 댐).
+    cluster_seed 가 있으면 저주파 노이즈 마스크로 배치를 군집화(숲처럼 모이게).
+    layer 로 배치 레이어 지정(야외 나무=L3 상위 데코, 실내/던전=L1).
+    floor_targets 가 주어지면 spec 의 target 대신 그 base_id 집합(여러 바닥)을 대상으로 쓴다.
+
+    반환: 배치된 모든 칸(footprint) 좌표 리스트(후처리용 — 잎·기둥 전체 포함).
     """
     specs = _BIOME_MULTITILE.get(biome, [])
     if not specs:
-        return
+        return []
+    placed_cells: list[tuple[int, int]] = []
     terr_ids = _terr_ids(tid)
+    mask = None
+    if cluster_seed is not None:
+        mask = _value_noise(width, height, cells=max(2, min(width, height) // 10), seed=cluster_seed)
     for name, target, density in specs:
         mt = pal.get_multitile(tid, name)
-        tgt = terr_ids.get(target)
-        if not mt or tgt is None:
+        if not mt:
             continue
+        if floor_targets is not None:
+            tgt_set = floor_targets
+        else:
+            tgt = terr_ids.get(target)
+            if tgt is None:
+                continue
+            tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상
         tiles, blocked = mt["tiles"], mt["blocked"]
         mh, mw = len(tiles), len(tiles[0])
-        tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상
         for y in range(height - mh + 1):
             for x in range(width - mw + 1):
                 fits = all(
                     base_of(get_tile(data, x + dx, y + dy, width, height, 0)) in tgt_set
-                    and get_tile(data, x + dx, y + dy, width, height, 1) == 0
+                    and get_tile(data, x + dx, y + dy, width, height, layer) == 0
                     for dy in range(mh)
                     for dx in range(mw)
                 )
@@ -409,13 +479,153 @@ def _place_multitile(
                     fits = fits and y > 0 and all(
                         get_tile(data, x + dx, y - 1, width, height, 5) == 1 for dx in range(mw)
                     )
-                if not fits or rng.random() >= density:
+                if not fits:
+                    continue
+                # 군집 마스크: 노이즈 높은 곳(숲)일수록 배치 확률↑, 낮은 곳은 억제
+                local = density
+                if mask is not None:
+                    m = float(mask[y, x])
+                    local = density * (m * m) * 3.0
+                if rng.random() >= local:
                     continue
                 for dy in range(mh):
                     for dx in range(mw):
-                        set_tile(data, x + dx, y + dy, width, height, 1, int(tiles[dy][dx]))
+                        set_tile(data, x + dx, y + dy, width, height, layer, int(tiles[dy][dx]))
+                        placed_cells.append((x + dx, y + dy))
                         if blocked[dy][dx]:
                             set_tile(data, x + dx, y + dy, width, height, 5, 1)
+    return placed_cells
+
+
+def _place_ground_decor(
+    data: list[int],
+    width: int,
+    height: int,
+    tid: int,
+    biome: str,
+    seed: int,
+    autotile: bool = True,
+) -> None:
+    """바닥(L0) 위 L1 에 A2 풀밭 텍스처(ground_decor)를 노이즈 패치로 겹쳐 깐다.
+
+    샘플맵 L1 의 본체(긴풀 등) 재현. 각 데코는 저주파 노이즈 임계로 덩어리(패치)를
+    만들어 단조로운 지면에 디테일을 준다. 끝나면 L1 에 apply_autotile 을 적용해 패치
+    경계를 자연스럽게 만든다(A2 오토타일). ground_decor 는 통행 가능이라 통행성 영향 없음.
+    """
+    specs = _GROUND_DECOR.get(biome, [])
+    if not specs:
+        return
+    terr_ids = _terr_ids(tid)
+    placed = False
+    for i, (name, target, coverage) in enumerate(specs):
+        dec = pal.get_ground_decor(tid, name)
+        tgt = terr_ids.get(target)
+        if not dec or tgt is None:
+            continue
+        tgt_set = _variant_set(tid, tgt)  # 변형 바닥도 대상
+        nz = _value_noise(
+            width, height, cells=max(2, min(width, height) // 8), seed=seed + 17 * (i + 1)
+        )
+        thr = 1.0 - coverage  # coverage 비율만큼 임계 초과 → 그만큼 덮음
+        base_id = int(dec["base_id"])
+        for y in range(height):
+            for x in range(width):
+                if get_tile(data, x, y, width, height, 1) != 0:
+                    continue  # 먼저 깐 데코 우선(겹침 방지)
+                if base_of(get_tile(data, x, y, width, height, 0)) not in tgt_set:
+                    continue
+                if float(nz[y, x]) >= thr:
+                    set_tile(data, x, y, width, height, 1, base_id)
+                    placed = True
+    if placed and autotile:
+        apply_autotile(data, width, height, layer=1, oob_connected=False)
+
+
+def _place_path(data: list[int], width: int, height: int, tid: int, seed: int) -> None:
+    """맵을 가로지르는 구불구불한 흙길을 grass 바닥(L0) 위에 깐다(바닥 다양화).
+
+    저주파 노이즈로 y 를 변위시켜 자연스러운 곡선 길을 만든다. grass 위에만 깔아
+    물·모래·눈은 건드리지 않는다. autotile 전에 호출해 흙길 가장자리 shape 가 보정되게
+    한다(dirt 는 grass 와 오토타일이 완전 호환은 아니지만 길이 좁아 경계가 거의 안 띈다).
+    """
+    grass = pal.get_tile_id(tid, "grass")
+    dirt = pal.get_tile_id(tid, "dirt")
+    if not grass or not dirt:
+        return
+    nz = _value_noise(width, height, cells=max(2, width // 8), seed=seed)
+    cy = height // 2
+    for x in range(width):
+        yy = int(cy + (float(nz[0, x]) - 0.5) * height * 0.5)
+        for dy in (0, 1):  # 길 폭 2칸
+            y = yy + dy
+            if 0 <= y < height and base_of(get_tile(data, x, y, width, height, 0)) == grass:
+                set_tile(data, x, y, width, height, 0, dirt)
+
+
+def _place_wall_shadows(data: list[int], width: int, height: int, wall_bases: set[int]) -> None:
+    """건물 벽(wall_bases)의 오른쪽 바닥 한 칸에만 그림자(L4=5)를 드리운다.
+
+    RPG Maker 그림자펜 표준: base 5(=0b0101, 왼쪽 절반). 빛이 왼쪽에서 와 벽 오른쪽에
+    그림자가 진다(example1~3 실내맵 스타일). 그림자 발생원은 **벽뿐** — 가구·통은 L0 가
+    바닥(통행 가능)이라 wall_bases 에 안 들어가 그림자가 안 생긴다(사용자 요청).
+    오른쪽 칸이 통행 가능 바닥일 때만 깐다(벽 안쪽·벽끼리 맞닿은 곳엔 안 생김).
+    """
+    shadow = 5  # 0b0101 = 왼쪽 절반
+    for y in range(height):
+        for x in range(width - 1):
+            if base_of(get_tile(data, x, y, width, height, 0)) not in wall_bases:
+                continue  # L0 가 벽인 칸만 — 가구는 L0=바닥이라 제외
+            rx = x + 1
+            if (
+                get_tile(data, rx, y, width, height, 5) == 0  # 오른쪽이 통행 가능 바닥
+                and get_tile(data, rx, y, width, height, 4) == 0  # 아직 그림자 없음
+            ):
+                set_tile(data, rx, y, width, height, 4, shadow)
+
+
+def _place_wall_decor(
+    data: list[int], width: int, height: int, tileset: int, rng: random.Random, density: float = 0.16
+) -> None:
+    """벽에 장식을 겹쳐 건다(L1 오버레이 — 벽 텍스처는 그대로 비친다).
+
+    - 벽 2칸(face 위가 천장 wall_top) & 외벽(천장 위가 집 밖 void): 창문·스테인드글라스
+      (세로 2칸)를 천장+면 위 L1 에 겹친다. 바깥과 면한 벽이라 창문이 자연스럽다.
+    - 벽 2칸 & 내벽(천장 위가 다른 방): 태피스트리·커튼(벽걸이)을 겹친다(밖이 없어 창문 부적합).
+    - 벽 1칸: 방패(shield) 단일 장식을 L1 에 건다.
+
+    장식을 L0 가 아니라 L1 에 둬야 벽(L0)이 뒤에 남아 창문의 투명부에 벽이 비친다(검은
+    배경 방지). 통행은 이미 벽(L0)이라 차단된 상태 그대로.
+    """
+    wall = pal.get_tile_id(tileset, "wall")
+    wall_top = pal.get_tile_id(tileset, "wall_top")
+    void = pal.get_tile_id(tileset, "void")
+    shield = pal.get_object(tileset, "shield")
+    outer = [pal.get_multitile(tileset, n) for n in ("window", "stained_glass")]
+    outer = [d for d in outer if d]
+    inner = [pal.get_multitile(tileset, n) for n in ("tapestry", "curtain_window")]
+    inner = [d for d in inner if d]
+    if not wall:
+        return
+    for y in range(1, height):
+        for x in range(width):
+            if base_of(get_tile(data, x, y, width, height, 0)) != wall:
+                continue  # 앞면 벽(face)에만
+            if base_of(get_tile(data, x, y - 1, width, height, 0)) != wall_top:
+                # 벽 1칸 → 방패 단일 (L1)
+                if shield and get_tile(data, x, y, width, height, 1) == 0 and rng.random() < density * 0.5:
+                    set_tile(data, x, y, width, height, 1, int(shield["base_id"]))
+                continue
+            # 벽 2칸. 천장 위가 집 밖(void)이면 외벽 → 창문, 아니면 내벽 → 태피스트리
+            above = base_of(get_tile(data, x, y - 2, width, height, 0)) if y - 2 >= 0 else void
+            pool = outer if (void and above == void) else inner
+            if not pool:
+                continue
+            if get_tile(data, x, y - 1, width, height, 1) != 0 or get_tile(data, x, y, width, height, 1) != 0:
+                continue
+            if rng.random() < density:
+                tiles = rng.choice(pool)["tiles"]
+                set_tile(data, x, y - 1, width, height, 1, int(tiles[0][0]))  # 천장 위 L1=상단
+                set_tile(data, x, y, width, height, 1, int(tiles[1][0]))  # 면 위 L1=하단
 
 
 def generate_terrain_map(
@@ -426,11 +636,13 @@ def generate_terrain_map(
     objects: bool = True,
     variants: bool = True,
     variant_regions: int = 1,
+    paths: bool = True,
 ) -> list[int]:
     """value noise 고도맵으로 바이옴별 지형을 자연스럽게 배치.
 
     낮은 고도=물/저지, 높은 고도=고지. 바이옴(_BIOMES)이 고도→지형 매핑을 정한다.
     저주파 노이즈로 큰 덩어리를 만들고, majority 스무딩으로 작은 조각을 정리한다.
+    paths=True 면 grass 위에 흙길을 깔아 바닥(L0)에 변화를 준다.
     """
     w, h, tid = dims.width, dims.height, dims.tileset_id
     s = seed or w * h
@@ -490,6 +702,8 @@ def generate_terrain_map(
             tile = zone_ids[zones[y][x]][nm] if zones is not None else flat_ids[nm]
             set_tile(data, x, y, w, h, 0, tile)
 
+    if paths:  # autotile 전에 — 흙길 가장자리 shape 가 보정되도록
+        _place_path(data, w, h, tid, s + 71)
     if autotile:
         apply_autotile(data, w, h, layer=0, oob_connected=True)
     # 바이옴 물(2240 등 palette 외 id 포함)도 통행 불가로 보장
@@ -498,8 +712,10 @@ def generate_terrain_map(
 
     if objects:
         rng = random.Random(s + 99)
-        _place_multitile(data, w, h, tid, biome, rng)  # 멀티타일 먼저(2x2 공간 확보)
-        _place_objects(data, w, h, tid, biome, rng)  # 단일은 남은 빈 칸에
+        # L1 풀밭 텍스처(샘플맵 L1 본체) → L3 나무 군집 → L2/L3 단일 식생 순.
+        _place_ground_decor(data, w, h, tid, biome, s + 5, autotile=autotile)
+        _place_multitile(data, w, h, tid, biome, rng, layer=3, cluster_seed=s + 41)  # 나무 숲(L3)
+        _place_objects(data, w, h, tid, biome, rng)  # 단일 식생(palette layer L2/L3)
     return data
 
 
@@ -621,6 +837,160 @@ def generate_dungeon_map(
     return data
 
 
+def _partition_house(
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    rng: random.Random,
+    min_room: int,
+    walls: set[tuple[int, int]],
+    doors: list[tuple[int, int]],
+    rooms: list[tuple[int, int, int, int]],
+    depth: int = 0,
+) -> None:
+    """집 내부 영역(x0,y0)~(x1,y1)을 빈틈없이 방으로 재귀 분할(BSP).
+
+    던전과 달리 방 사이 여백·복도가 없다 — 분할선이 곧 내벽(walls)이고, 각 분할마다
+    내벽 중간 한 칸을 문(doors)으로 뚫어 양쪽 방을 잇는다(트리 구조라 전체 연결 보장).
+    더 못 나누거나 확률적으로 멈추면 그 영역을 방(rooms)으로 확정한다.
+    """
+    w, h = x1 - x0 + 1, y1 - y0 + 1
+    can_v = w >= min_room * 2 + 1  # 세로 내벽으로 좌우 분할 가능
+    can_h = h >= min_room * 2 + 1  # 가로 내벽으로 상하 분할 가능
+    if (not can_v and not can_h) or (depth >= 2 and rng.random() < 0.4):
+        rooms.append((x0, y0, x1, y1))
+        return
+    vertical = can_v if not can_h else (w >= h)
+    if vertical:
+        sx = rng.randint(x0 + min_room, x1 - min_room)  # 내벽 위치
+        for y in range(y0, y1 + 1):
+            walls.add((sx, y))
+        doors.append((sx, rng.randint(y0 + 1, y1 - 1)))  # 문(양 끝 제외 중간)
+        _partition_house(x0, y0, sx - 1, y1, rng, min_room, walls, doors, rooms, depth + 1)
+        _partition_house(sx + 1, y0, x1, y1, rng, min_room, walls, doors, rooms, depth + 1)
+    else:
+        sy = rng.randint(y0 + min_room, y1 - min_room)
+        for x in range(x0, x1 + 1):
+            walls.add((x, sy))
+        doors.append((rng.randint(x0 + 1, x1 - 1), sy))
+        _partition_house(x0, y0, x1, sy - 1, rng, min_room, walls, doors, rooms, depth + 1)
+        _partition_house(x0, sy + 1, x1, y1, rng, min_room, walls, doors, rooms, depth + 1)
+
+
+def generate_house_map(
+    dims: MapDims,
+    seed: int = 0,
+    objects: bool = True,
+    tileset: int = 3,
+    biome: str = "interior",
+    floor_name: str = "floor",
+    wall_name: str = "wall",
+    wall_top_name: str = "wall_top",
+    variants: bool = True,
+) -> list[int]:
+    """집 한 채 실내 생성 — 큰 직사각형 집을 내벽으로 방 분할, 문으로 연결(거주 공간).
+
+    던전 BSP(좁은 방+복도 미로)와 달리: 집 전체가 floor 로 차고, 내벽이 방을 빈틈없이
+    나누며, 복도 없이 문으로 잇는다. 일부 방엔 바닥을 타일(tile_floor)로 바꾸거나 중앙에
+    카펫(carpet) 러그를 깐다. 가구는 벽을 따라 정돈 배치하고, 벽 오른쪽에 그림자를 둔다.
+    집 밖은 void(검은 공백).
+    """
+    w, h = dims.width, dims.height
+    s = seed or w * h
+    base_floor = pal.get_tile_id(tileset, floor_name)
+    floor = _pick_variant(tileset, base_floor, random.Random(s + 7)) if variants else base_floor
+    carpet = pal.get_tile_id(tileset, "carpet")
+    wall = pal.get_tile_id(tileset, wall_name)
+    wall_top = pal.get_tile_id(tileset, wall_top_name)
+    vt = pal.get_terrain(tileset, "void")
+    void = int(vt["base_id"]) if vt else wall_top
+
+    rng = random.Random(s)
+    data = make_empty_data(w, h)
+    for y in range(h):
+        for x in range(w):
+            set_tile(data, x, y, w, h, 0, void)  # 집 밖 = 공백
+
+    # 집 영역(여백 1칸) 내부를 바닥으로 채우고 외벽으로 두름
+    mx0, my0, mx1, my1 = 1, 1, w - 2, h - 2
+    for y in range(my0, my1 + 1):
+        for x in range(mx0, mx1 + 1):
+            edge = x in (mx0, mx1) or y in (my0, my1)
+            set_tile(data, x, y, w, h, 0, wall_top if edge else floor)
+
+    # 집 내부를 방으로 분할(내벽 + 문)
+    walls: set[tuple[int, int]] = set()
+    doors: list[tuple[int, int]] = []
+    rooms: list[tuple[int, int, int, int]] = []
+    _partition_house(mx0 + 1, my0 + 1, mx1 - 1, my1 - 1, rng, 4, walls, doors, rooms)
+    for x, y in walls:
+        set_tile(data, x, y, w, h, 0, wall_top)
+    for x, y in doors:
+        set_tile(data, x, y, w, h, 0, floor)  # 문 = 내벽 뚫기
+
+    # 방마다 바닥 종류를 풀에서 골라 다양화(마루·나무결·돌·벽돌·타일) + 일부 방 중앙에 카펫 러그
+    floor_pool = [base_floor]
+    for nm in ("wood_floor2", "stone_floor", "brick_floor", "fancy_tile", "tile_floor"):
+        fid = pal.get_tile_id(tileset, nm)
+        if fid:
+            floor_pool.append(fid)
+    for x0, y0, x1, y1 in rooms:
+        rw, rh = x1 - x0 + 1, y1 - y0 + 1
+        room_floor = rng.choice(floor_pool)
+        if room_floor != base_of(floor):
+            for y in range(y0, y1 + 1):
+                for x in range(x0, x1 + 1):
+                    if base_of(get_tile(data, x, y, w, h, 0)) == base_of(floor):
+                        set_tile(data, x, y, w, h, 0, room_floor)
+        if carpet and rw >= 5 and rh >= 5 and rng.random() < 0.45:  # 중앙 카펫 러그
+            cur = base_of(get_tile(data, x0 + 1, y0 + 1, w, h, 0))  # 방 바닥색
+            for y in range(y0 + 1, y1):
+                for x in range(x0 + 1, x1):
+                    if base_of(get_tile(data, x, y, w, h, 0)) == cur:
+                        set_tile(data, x, y, w, h, 0, carpet)
+
+    # 입체 벽: 아래가 바닥인 벽 → 앞면(face). floors = 모든 바닥 종류 + 카펫.
+    # 집마다 벽 높이를 1칸/2칸으로 다양화 — 2칸이면 천장(top) 아래에 면(face)이 한 줄 더
+    # 생겨 세로 2칸 창문·태피스트리가 들어갈 자리가 된다(_place_wall_decor 가 채움).
+    floors = set(floor_pool)
+    if carpet:
+        floors.add(carpet)
+    wall_height = rng.choice((1, 2))
+    for y in range(h):
+        for x in range(w):
+            if base_of(get_tile(data, x, y, w, h, 0)) == wall_top:
+                below = base_of(get_tile(data, x, y + 1, w, h, 0)) if y + 1 < h else -1
+                if below in floors:
+                    if wall_height == 2 and y + 1 < h:
+                        set_tile(data, x, y + 1, w, h, 0, wall)  # 천장 아래 칸=면(벽 2칸)
+                    else:
+                        set_tile(data, x, y, w, h, 0, wall)  # 천장을 면으로(벽 1칸)
+
+    impass = set(pal.impassable_ids(tileset)) | {wall, wall_top}
+    _set_passability_by_base(data, w, h, impass)
+
+    if objects:
+        orng = random.Random(s + 99)
+        ft = {b for b in floor_pool}  # 모든 방 바닥에 가구가 놓이게(카펫 러그는 제외해 비움)
+        _place_wall_decor(data, w, h, tileset, orng)  # 벽에 창문·태피스트리·커튼
+        _place_multitile(
+            data, w, h, tileset, biome, orng, against_wall=True, floor_targets=ft
+        )  # 가구 벽에 등 댐
+        _place_objects(
+            data, w, h, tileset, biome, orng, wall_adjacent=True, floor_targets=ft
+        )  # 단일 가구 벽 따라
+    # 그림자는 건물 벽에만(가구 제외). 벽장식(창문 등)도 벽이므로 wall_bases 에 포함.
+    wall_bases = {wall, wall_top}
+    for n in ("window", "tapestry", "curtain_window", "stained_glass"):
+        mt = pal.get_multitile(tileset, n)
+        if mt:
+            for row in mt["tiles"]:
+                wall_bases.update(int(t) for t in row)
+    _place_wall_shadows(data, w, h, wall_bases)
+    return data
+
+
 def generate_interior_map(
     dims: MapDims,
     seed: int = 0,
@@ -700,6 +1070,7 @@ def generate_interior_map(
         rng = random.Random(s + 99)
         _place_multitile(data, w, h, tileset, biome, rng, against_wall=True)  # 가구 벽에 등 댐
         _place_objects(data, w, h, tileset, biome, rng)
+    _place_wall_shadows(data, w, h, {wall, wall_top})  # 그림자는 벽에만(가구 제외)
     return data
 
 
@@ -903,14 +1274,13 @@ def main(argv: list[str] | None = None) -> None:
         )
         mode_label = args.mode
     elif args.mode == "interior":
-        data = generate_interior_map(
+        data = generate_house_map(
             dims,
             seed=args.seed,
             objects=not args.no_objects,
-            wall_top_name="wall_top",
             variants=not args.no_variants,
         )
-        mode_label = "interior"
+        mode_label = "interior/house"
     elif args.mode == "sf_interior":
         data = generate_interior_map(
             dims,

@@ -179,15 +179,46 @@ def render_data_to_png(
     out_path: str,
     cell: int = 24,
 ) -> None:
-    """맵 data(6레이어)를 실제 타일셋으로 렌더해 PNG 저장. 레이어 0~3 만 그린다."""
+    """맵 data(6레이어)를 실제 타일셋으로 렌더해 PNG 저장.
+
+    레이어 순서: 바닥(L0) → 그림자(L4) → 오브젝트(L1~L3). 그림자는 바닥 위·오브젝트 아래.
+    """
     from PIL import Image
 
     images = load_tileset_images(tileset_id, base_game)
     canvas = Image.new("RGBA", (width * cell, height * cell), (0, 0, 0, 255))
     for layer in range(4):
+        if layer == 1:  # 바닥(L0) 직후, 오브젝트(L1~) 직전에 그림자
+            _draw_shadows(canvas, data, width, height, cell)
         for y in range(height):
             for x in range(width):
                 tid = get_tile(data, x, y, width, height, layer)
                 if tid:
                     _draw_tile(canvas, tid, x * cell, y * cell, cell, images)
     canvas.convert("RGB").save(out_path)
+
+
+def _draw_shadows(canvas: Any, data: list[int], width: int, height: int, cell: int) -> None:
+    """L4 그림자 레이어를 연하고 흐릿한 반투명 검정 사분면으로 그린다(RPG Maker 그림자펜).
+
+    그림자 값은 4비트 마스크: bit0(1)=좌상, bit1(2)=우상, bit2(4)=좌하, bit3(8)=우하.
+    각 비트가 켜진 사분면(cell/2)을 칠한다(예: 5=0b0101=왼쪽 절반). 약한 가우시안 블러로
+    가장자리를 흐릿하게 해 example1~3 처럼 자연스럽게 만든다.
+    """
+    from PIL import Image, ImageDraw, ImageFilter
+
+    half = cell // 2
+    quads = {1: (0, 0), 2: (half, 0), 4: (0, half), 8: (half, half)}
+    overlay = Image.new("RGBA", (width * cell, height * cell), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    for y in range(height):
+        for x in range(width):
+            s = get_tile(data, x, y, width, height, 4)
+            if not s:
+                continue
+            for bit, (ox, oy) in quads.items():
+                if s & bit:
+                    px, py = x * cell + ox, y * cell + oy
+                    draw.rectangle([px, py, px + half - 1, py + half - 1], fill=(0, 0, 0, 110))
+    overlay = overlay.filter(ImageFilter.GaussianBlur(radius=max(0.8, cell * 0.04)))  # 살짝 흐릿
+    canvas.alpha_composite(overlay)

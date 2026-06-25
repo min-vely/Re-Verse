@@ -112,39 +112,80 @@
         "_note": "B/C 시트(base_id 0~1023) 단일 타일 오브젝트. 큰 이미지로 시각 검증 + flags 통행성 확인. 나무(184~186)는 멀티타일(잎+기둥)이라 제외 — 멀티타일 지원은 후속 과제. passable=false는 통행 차단.",
         "rock": {
           "base_id": 159,
-          "layer": 1,
+          "layer": 3,
           "passable": false,
-          "note": "바위 더미 (flags 0x060F 막힘)"
+          "note": "바위 더미 (flags 0x060F 막힘). L3 상위 데코(통행은 L5 차단)."
         },
         "desert_rock": {
           "base_id": 167,
-          "layer": 1,
+          "layer": 3,
           "passable": false,
-          "note": "사막 바위 (flags 0x060F 막힘)"
+          "note": "사막 바위 (flags 0x060F 막힘). L3 상위 데코."
         },
         "dead_tree": {
           "base_id": 240,
-          "layer": 1,
+          "layer": 3,
           "passable": false,
-          "note": "죽은 나무(황무지, 단일타일)"
+          "note": "죽은 나무(황무지, 단일타일). L3 상위 데코."
         },
         "berry_bush": {
           "base_id": 175,
-          "layer": 1,
+          "layer": 3,
           "passable": false,
-          "note": "열매 덤불 (flags 0x060F 막힘)"
+          "note": "열매 덤불 (flags 0x060F 막힘). L3 상위 데코."
         },
         "grass_tuft": {
           "base_id": 160,
-          "layer": 1,
+          "layer": 2,
           "passable": true,
-          "note": "풀더미 (flags 0x0600 통과)"
+          "note": "풀더미 (flags 0x0600 통과). L2 중간 데코."
         },
         "flower": {
           "base_id": 161,
-          "layer": 1,
+          "layer": 2,
           "passable": true,
-          "note": "보라 꽃 (flags 0x0600 통과)"
+          "note": "보라 꽃 (flags 0x0600 통과). L2 중간 데코."
+        },
+        "reed": {
+          "base_id": 153,
+          "layer": 3,
+          "passable": true,
+          "note": "갈대/긴풀 무더기 (샘플맵 L3 x401, 통과). 상위 데코 레이어."
+        },
+        "bush_clump": {
+          "base_id": 155,
+          "layer": 2,
+          "passable": true,
+          "note": "작은 풀무더기 (샘플맵 L3 x425, 통과). L2 중간 데코."
+        },
+        "shrub": {
+          "base_id": 157,
+          "layer": 3,
+          "passable": true,
+          "note": "둥근 관목/덤불 (샘플맵 L3 x172, star 통과). 상위 데코 레이어."
+        }
+      },
+      "ground_decor": {
+        "_note": "A2 지면 텍스처를 바닥(L0) 위 L1 에 패치로 겹쳐 까는 데코(풀밭·마른풀·눈). 오토타일 대상이라 _place_ground_decor 가 군집 배치 후 apply_autotile 로 경계를 자연스럽게 만든다. 샘플맵 L1 의 본체(긴풀 3008 x4213).",
+        "tall_grass": {
+          "base_id": 3008,
+          "passable": true,
+          "note": "밝은 클로버/짧은 풀밭 (A2, 샘플맵 L1 최다 x4213)"
+        },
+        "grass_dark": {
+          "base_id": 3920,
+          "passable": true,
+          "note": "진녹색 풀밭 (A2, 샘플맵 L1 x842)"
+        },
+        "dry_grass": {
+          "base_id": 3776,
+          "passable": true,
+          "note": "마른/가을 풀밭 (A2, 샘플맵 L1 x759). 황무지·사막 경계용"
+        },
+        "snow_patch": {
+          "base_id": 4160,
+          "passable": true,
+          "note": "눈더미 패치 (A2, 샘플맵 L1 x1047). 설원 데코"
         }
       },
       "multitile": {
@@ -221,6 +262,30 @@
           "passable": true,
           "note": "빨간 카펫"
         },
+        "wood_floor2": {
+          "base_id": 2816,
+          "layer": 0,
+          "passable": true,
+          "note": "나무 마루(결 다른 종류)"
+        },
+        "stone_floor": {
+          "base_id": 3248,
+          "layer": 0,
+          "passable": true,
+          "note": "회색 돌바닥"
+        },
+        "brick_floor": {
+          "base_id": 3632,
+          "layer": 0,
+          "passable": true,
+          "note": "주황 벽돌 바닥"
+        },
+        "fancy_tile": {
+          "base_id": 3968,
+          "layer": 0,
+          "passable": true,
+          "note": "문양 장식 타일 바닥"
+        },
         "wall": {
           "base_id": 6512,
           "layer": 0,
@@ -241,7 +306,7 @@
         }
       },
       "objects": {
-        "_note": "실내 가구(단일타일). 침대(171)·책장(430)·기둥(444)·창문(76)은 멀티타일 — 후속.",
+        "_note": "실내 가구(단일타일). 멀티타일(침대·책장·기둥·창문 등)은 multitile 참조.",
         "chair": {
           "base_id": 120,
           "layer": 1,
@@ -252,13 +317,25 @@
           "base_id": 121,
           "layer": 1,
           "passable": true,
-          "note": "원형 러그"
+          "note": "원형 러그/방석"
         },
         "barrel": {
           "base_id": 212,
           "layer": 1,
           "passable": false,
-          "note": "나무통"
+          "note": "나무통 (막힘)"
+        },
+        "table": {
+          "base_id": 124,
+          "layer": 1,
+          "passable": false,
+          "note": "탁자(화분 얹힘, 단일, 막힘). 샘플맵 L1 단독 다수"
+        },
+        "shield": {
+          "base_id": 90,
+          "layer": 3,
+          "passable": false,
+          "note": "방패 벽장식(단일, 막힘). 벽면에 거는 장식"
         }
       },
       "multitile": {
@@ -323,6 +400,82 @@
             ]
           ],
           "note": "기둥 1x2(세로)"
+        },
+        "window": {
+          "tiles": [
+            [
+              68
+            ],
+            [
+              76
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "아치 창문 1x2(세로). 벽면 장식 — 68→D→76 x197"
+        },
+        "tapestry": {
+          "tiles": [
+            [
+              80
+            ],
+            [
+              88
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "벽걸이 태피스트리 1x2(세로). 벽면 장식 — 80→D→88 x91"
+        },
+        "curtain_window": {
+          "tiles": [
+            [
+              69
+            ],
+            [
+              77
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "커튼 달린 창문 1x2(세로). 벽면 장식 — 69→D→77 x51"
+        },
+        "stained_glass": {
+          "tiles": [
+            [
+              71
+            ],
+            [
+              79
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "스테인드글라스 창 1x2(세로). 벽면 장식 — 71→D→79 x46"
         }
       }
     },

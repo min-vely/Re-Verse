@@ -13,6 +13,7 @@ from agent.generation.mapgen.palette_mapgen import (
     _DUNGEON_THEMES,
     MapDims,
     generate_dungeon_map,
+    generate_house_map,
     generate_interior_map,
     generate_palette_map,
     generate_terrain_map,
@@ -177,10 +178,13 @@ def test_terrain_no_foreign_terrain_bleed():
 
     grassland 의 지면 base 는 {물·잔디·자갈} 캐노니컬뿐이어야 한다(variant_regions 무관).
     """
+    # paths=False 로 흙길(의도적 dirt)을 제외하고 변형 메커니즘만 격리 검증
     allowed = {pal.get_tile_id(2, n) for n in ("water", "grass", "gravel")}
     terrain_ids = set(pal.terrain_map(2).values())
     for vr in (1, 4):
-        d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", variant_regions=vr)
+        d = generate_terrain_map(
+            _terrain_dims(), seed=5, biome="grassland", variant_regions=vr, paths=False
+        )
         used = {base_of(d[i]) for i in range(40 * 40)} & terrain_ids
         assert used <= allowed, f"vr={vr}: 외래 지형 누출 {used - allowed}"
 
@@ -229,13 +233,14 @@ def test_unknown_biome_falls_back_to_default():
 
 
 def test_objects_placed_and_block_passability():
-    """오브젝트가 레이어1에 배치되고, 통행 불가 오브젝트(나무)는 레이어5를 막는다."""
+    """오브젝트가 palette 가 정한 레이어에 배치되고, 통행 불가 오브젝트는 레이어5를 막는다."""
     d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", objects=True)
-    berry = pal.get_object(2, "berry_bush")["base_id"]  # 막힘 오브젝트
+    berry_obj = pal.get_object(2, "berry_bush")  # 막힘 오브젝트
+    berry, layer = berry_obj["base_id"], int(berry_obj.get("layer", 1))
     placed = blocked = 0
     for y in range(40):
         for x in range(40):
-            if get_tile(d, x, y, 40, 40, 1) == berry:
+            if get_tile(d, x, y, 40, 40, layer) == berry:
                 placed += 1
                 if get_tile(d, x, y, 40, 40, 5) == 1:
                     blocked += 1
@@ -325,6 +330,85 @@ def test_interior_deterministic():
     assert a == b
 
 
+def test_house_has_rooms_floor_and_void():
+    """집 모델: 여러 바닥 종류·벽·문이 있고 집 밖 모서리는 void(검은 공백)."""
+    w, h = 30, 24
+    d = generate_house_map(MapDims(w, h, 3), seed=11)
+    floor_bases = {
+        pal.get_tile_id(3, n)
+        for n in ("floor", "wood_floor2", "stone_floor", "brick_floor", "fancy_tile", "tile_floor")
+    }
+    wall = pal.get_tile_id(3, "wall")
+    wall_top = pal.get_tile_id(3, "wall_top")
+    void = pal.get_tile_id(3, "void")
+    bases = {base_of(get_tile(d, x, y, w, h, 0)) for y in range(h) for x in range(w)}
+    assert bases & floor_bases  # 바닥 종류 중 하나 이상
+    assert wall in bases or wall_top in bases  # 벽
+    assert base_of(get_tile(d, 0, 0, w, h, 0)) == void  # 모서리는 집 밖
+
+
+def test_house_all_floor_connected():
+    """모든 바닥 칸이 문을 통해 연결된다 — 고립된 방이 없다(문 뚫기 검증)."""
+    w, h = 30, 24
+    d = generate_house_map(MapDims(w, h, 3), seed=11, objects=False)
+    void = pal.get_tile_id(3, "void")
+    walk = {
+        (x, y)
+        for y in range(h)
+        for x in range(w)
+        if get_tile(d, x, y, w, h, 5) == 0 and base_of(get_tile(d, x, y, w, h, 0)) != void
+    }
+    start = next(iter(walk))
+    seen, stack = {start}, [start]
+    while stack:
+        cx, cy = stack.pop()
+        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            n = (cx + dx, cy + dy)
+            if n in walk and n not in seen:
+                seen.add(n)
+                stack.append(n)
+    assert len(seen) == len(walk), f"고립된 바닥 {len(walk) - len(seen)}칸 (문 안 뚫림)"
+
+
+def test_house_deterministic():
+    a = generate_house_map(MapDims(28, 22, 3), seed=7)
+    b = generate_house_map(MapDims(28, 22, 3), seed=7)
+    assert a == b
+
+
+def test_house_floor_and_furniture_variety():
+    """집에 여러 바닥 종류와 여러 가구가 배치된다(예쁜 방 — 다양성 보증)."""
+    w, h = 30, 24
+    d = generate_house_map(MapDims(w, h, 3), seed=11)
+    floor_bases = {
+        pal.get_tile_id(3, n)
+        for n in ("floor", "wood_floor2", "stone_floor", "brick_floor", "fancy_tile", "tile_floor")
+    }
+    l0 = {base_of(get_tile(d, x, y, w, h, 0)) for y in range(h) for x in range(w)}
+    assert len(l0 & floor_bases) >= 2, "바닥 종류가 1종뿐(다양성 부족)"
+    obj_bases = set()
+    for li in (1, 2, 3):
+        for i in range(w * h):
+            b = base_of(d[li * w * h + i])
+            if 0 < b < 768:
+                obj_bases.add(b)
+    assert len({120, 124, 212} & obj_bases) >= 2, "가구 종류가 부족(table/chair/barrel)"
+
+
+def test_interior_wall_shadows():
+    """실내 벽·기둥·가구 오른쪽 바닥에 그림자(L4=5)가 드리우고, 통행은 안 막는다."""
+    w, h = 30, 24
+    d = generate_interior_map(MapDims(w, h, 3), seed=5, wall_top_name="wall_top")
+    found = 0
+    for y in range(h):
+        for x in range(1, w):
+            if get_tile(d, x, y, w, h, 4) == 5:  # 왼쪽 절반 그림자
+                assert get_tile(d, x - 1, y, w, h, 5) == 1  # 왼쪽 칸은 막힘(벽/가구)
+                assert get_tile(d, x, y, w, h, 5) == 0  # 그림자 칸은 통행 가능 바닥
+                found += 1
+    assert found > 0
+
+
 def test_interior_furniture_against_wall():
     """멀티타일 가구(침대·책장·기둥)는 윗칸이 벽인 위치에 배치된다."""
     d = generate_interior_map(MapDims(40, 32, 3), seed=5)
@@ -385,16 +469,56 @@ def test_sf_interior_floor_wall():
 
 
 def test_multitile_tree_placed_complete():
-    """나무 2x2 가 완전한 셋트로 배치되고, 기둥(하단)은 통행 차단된다."""
+    """나무 2x2 가 L3(상위 데코)에 완전한 셋트로 배치되고, 기둥(하단)은 통행 차단된다."""
     d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland")
     found = 0
     for y in range(39):
         for x in range(39):
-            if get_tile(d, x, y, 40, 40, 1) == 176:  # 나무 좌상단
-                assert get_tile(d, x + 1, y, 40, 40, 1) == 177  # 우상
-                assert get_tile(d, x, y + 1, 40, 40, 1) == 184  # 좌하(기둥)
-                assert get_tile(d, x + 1, y + 1, 40, 40, 1) == 185  # 우하(기둥)
+            if get_tile(d, x, y, 40, 40, 3) == 176:  # 나무 좌상단 (L3)
+                assert get_tile(d, x + 1, y, 40, 40, 3) == 177  # 우상
+                assert get_tile(d, x, y + 1, 40, 40, 3) == 184  # 좌하(기둥)
+                assert get_tile(d, x + 1, y + 1, 40, 40, 3) == 185  # 우하(기둥)
                 assert get_tile(d, x, y + 1, 40, 40, 5) == 1  # 기둥 통행 차단
                 assert get_tile(d, x + 1, y + 1, 40, 40, 5) == 1
                 found += 1
     assert found > 0
+
+
+def test_ground_decor_fills_layer1():
+    """grassland 은 L1 에 풀밭 텍스처(ground_decor)를 패치로 겹쳐 깐다(샘플맵 L1 재현).
+
+    base_id 가 ground_decor 의 풀밭(tall_grass 등)이어야 하고, 통행은 막지 않는다.
+    """
+    d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", objects=True)
+    decor_bases = {
+        int(v["base_id"])
+        for k, v in pal.get_tileset(2).get("ground_decor", {}).items()
+        if not k.startswith("_")
+    }
+    l1 = [base_of(get_tile(d, x, y, 40, 40, 1)) for y in range(40) for x in range(40)]
+    assert sum(1 for b in l1 if b in decor_bases) > 0  # 풀밭 데코가 L1 에 깔림
+
+
+def test_decor_layers_populated():
+    """L0~L3 가 모두 채워진다 — 데코 레이어 다양화의 핵심 보증(샘플맵 수준)."""
+    d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", objects=True)
+    for layer in (0, 1, 2, 3):
+        nonzero = sum(1 for y in range(40) for x in range(40) if get_tile(d, x, y, 40, 40, layer))
+        assert nonzero > 0, f"L{layer} 가 비어 있음 (데코 레이어 다양화 실패)"
+
+
+def test_no_objects_keeps_decor_layers_empty():
+    """objects=False 면 데코 레이어(L1~L3)가 모두 비어 있다(바닥 L0 만)."""
+    d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", objects=False)
+    plane = 40 * 40
+    for layer in (1, 2, 3):
+        assert all(d[layer * plane + i] == 0 for i in range(plane)), f"L{layer} 가 비어있지 않음"
+
+
+def test_path_places_dirt_on_grass():
+    """paths=True 면 grass 위에 흙길(dirt)이 깔리고, paths=False 면 깔리지 않는다."""
+    dirt = pal.get_tile_id(2, "dirt")
+    d = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", paths=True)
+    assert any(base_of(d[i]) == dirt for i in range(40 * 40)), "흙길이 안 깔림"
+    d2 = generate_terrain_map(_terrain_dims(), seed=5, biome="grassland", paths=False)
+    assert all(base_of(d2[i]) != dirt for i in range(40 * 40)), "paths=False 인데 흙 등장"

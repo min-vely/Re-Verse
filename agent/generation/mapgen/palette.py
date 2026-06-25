@@ -94,6 +94,18 @@ def get_object(tileset_id: int, name: str) -> dict[str, Any] | None:
     return ts.get("objects", {}).get(name)
 
 
+def get_ground_decor(tileset_id: int, name: str) -> dict[str, Any] | None:
+    """tileset_id + 데코 이름 → ground_decor 항목({base_id, passable, note}). 없으면 None.
+
+    ground_decor 는 바닥(L0) 위 L1 에 패치로 겹쳐 까는 A2 지면 텍스처(풀밭·마른풀·눈).
+    오토타일 대상이라 생성기가 군집 배치 후 apply_autotile 로 경계를 다듬는다.
+    """
+    ts = get_tileset(tileset_id)
+    if not ts:
+        return None
+    return ts.get("ground_decor", {}).get(name)
+
+
 def get_multitile(tileset_id: int, name: str) -> dict[str, Any] | None:
     """tileset_id + 멀티타일 이름 → {tiles[행][열], blocked[행][열]}. 없으면 None.
 
