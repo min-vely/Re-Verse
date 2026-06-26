@@ -273,8 +273,22 @@
           "note": "눈 덮인 나무 2x2"
         },
         "palm_tree": {
-          "tiles": [[236], [244]],
-          "blocked": [[false], [true]],
+          "tiles": [
+            [
+              236
+            ],
+            [
+              244
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              true
+            ]
+          ],
           "note": "야자수 1x2 (위=잎 통과, 아래=기둥 막힘). 렌더 재검증."
         }
       }
@@ -344,6 +358,78 @@
           "layer": 0,
           "passable": false,
           "note": "검은 공백(방 밖)"
+        },
+        "water": {
+          "base_id": 2048,
+          "layer": 0,
+          "passable": false,
+          "note": "파란 물(A1, 통행불가) (A1/A2/A4 발굴)"
+        },
+        "water_deep": {
+          "base_id": 2096,
+          "layer": 0,
+          "passable": false,
+          "note": "파란 물 변형(A1) (A1/A2/A4 발굴)"
+        },
+        "pebble_floor": {
+          "base_id": 2864,
+          "layer": 0,
+          "passable": true,
+          "note": "자갈 바닥(A2) (A1/A2/A4 발굴)"
+        },
+        "wall_stone": {
+          "base_id": 5888,
+          "layer": 0,
+          "passable": false,
+          "note": "석재 벽(A4) (A1/A2/A4 발굴)"
+        },
+        "wall_dark": {
+          "base_id": 5936,
+          "layer": 0,
+          "passable": false,
+          "note": "어두운 벽(A4) (A1/A2/A4 발굴)"
+        },
+        "wall_dark2": {
+          "base_id": 5984,
+          "layer": 0,
+          "passable": false,
+          "note": "어두운 벽2(A4) (A1/A2/A4 발굴)"
+        },
+        "wall_sand": {
+          "base_id": 6032,
+          "layer": 0,
+          "passable": false,
+          "note": "사암 벽(A4) (A1/A2/A4 발굴)"
+        },
+        "wall_moss": {
+          "base_id": 6080,
+          "layer": 0,
+          "passable": false,
+          "note": "이끼 낀 벽(A4) (A1/A2/A4 발굴)"
+        },
+        "water_lily": {
+          "base_id": 2144,
+          "layer": 0,
+          "passable": false,
+          "note": "수련/꽃 물(A1) (A1/A2 발굴)"
+        },
+        "sand_floor": {
+          "base_id": 2912,
+          "layer": 0,
+          "passable": true,
+          "note": "모래 바닥(A2) (A1/A2 발굴)"
+        },
+        "magic_floor": {
+          "base_id": 2192,
+          "layer": 0,
+          "passable": true,
+          "note": "보라 마법/타일 바닥(A1) (A1/A2 발굴)"
+        },
+        "bamboo_floor": {
+          "base_id": 2960,
+          "layer": 0,
+          "passable": true,
+          "note": "대나무/나무 마루(A2) (A1/A2 발굴)"
         }
       },
       "objects": {
@@ -455,6 +541,2682 @@
           "layer": 3,
           "passable": false,
           "note": "벽거울(단일)"
+        },
+        "wall_decal": {
+          "base_id": 1,
+          "layer": 1,
+          "passable": true,
+          "note": "wall_decal (tileset3 시트B 발굴)"
+        },
+        "ladder_rail": {
+          "base_id": 7,
+          "layer": 1,
+          "passable": false,
+          "note": "ladder_rail (tileset3 시트B 발굴)"
+        },
+        "dark_stone": {
+          "base_id": 8,
+          "layer": 1,
+          "passable": false,
+          "note": "dark_stone (tileset3 시트B 발굴)"
+        },
+        "wardrobe_l": {
+          "base_id": 11,
+          "layer": 1,
+          "passable": false,
+          "note": "wardrobe_l (tileset3 시트B 발굴)"
+        },
+        "wardrobe_r": {
+          "base_id": 12,
+          "layer": 1,
+          "passable": false,
+          "note": "wardrobe_r (tileset3 시트B 발굴)"
+        },
+        "ladder_rail2": {
+          "base_id": 15,
+          "layer": 1,
+          "passable": false,
+          "note": "ladder_rail2 (tileset3 시트B 발굴)"
+        },
+        "dark_stone2": {
+          "base_id": 16,
+          "layer": 1,
+          "passable": false,
+          "note": "dark_stone2 (tileset3 시트B 발굴)"
+        },
+        "arch_dark_l": {
+          "base_id": 19,
+          "layer": 1,
+          "passable": false,
+          "note": "arch_dark_l (tileset3 시트B 발굴)"
+        },
+        "arch_dark_r": {
+          "base_id": 20,
+          "layer": 1,
+          "passable": false,
+          "note": "arch_dark_r (tileset3 시트B 발굴)"
+        },
+        "rope": {
+          "base_id": 23,
+          "layer": 1,
+          "passable": true,
+          "note": "rope (tileset3 시트B 발굴)"
+        },
+        "sandstone_block": {
+          "base_id": 26,
+          "layer": 1,
+          "passable": false,
+          "note": "sandstone_block (tileset3 시트B 발굴)"
+        },
+        "stone_pile_white": {
+          "base_id": 27,
+          "layer": 1,
+          "passable": false,
+          "note": "stone_pile_white (tileset3 시트B 발굴)"
+        },
+        "stone_pile_tan": {
+          "base_id": 28,
+          "layer": 1,
+          "passable": false,
+          "note": "stone_pile_tan (tileset3 시트B 발굴)"
+        },
+        "cobweb": {
+          "base_id": 29,
+          "layer": 1,
+          "passable": true,
+          "note": "cobweb (tileset3 시트B 발굴)"
+        },
+        "cobweb2": {
+          "base_id": 30,
+          "layer": 1,
+          "passable": true,
+          "note": "cobweb2 (tileset3 시트B 발굴)"
+        },
+        "brazier": {
+          "base_id": 31,
+          "layer": 1,
+          "passable": false,
+          "note": "brazier (tileset3 시트B 발굴)"
+        },
+        "brick_wall": {
+          "base_id": 34,
+          "layer": 1,
+          "passable": false,
+          "note": "brick_wall (tileset3 시트B 발굴)"
+        },
+        "gravestone": {
+          "base_id": 35,
+          "layer": 1,
+          "passable": false,
+          "note": "gravestone (tileset3 시트B 발굴)"
+        },
+        "wall_decal2": {
+          "base_id": 36,
+          "layer": 1,
+          "passable": true,
+          "note": "wall_decal2 (tileset3 시트B 발굴)"
+        },
+        "cobweb3": {
+          "base_id": 37,
+          "layer": 1,
+          "passable": true,
+          "note": "cobweb3 (tileset3 시트B 발굴)"
+        },
+        "cobweb4": {
+          "base_id": 38,
+          "layer": 1,
+          "passable": true,
+          "note": "cobweb4 (tileset3 시트B 발굴)"
+        },
+        "brick_window": {
+          "base_id": 39,
+          "layer": 1,
+          "passable": false,
+          "note": "brick_window (tileset3 시트B 발굴)"
+        },
+        "cobble_pile": {
+          "base_id": 42,
+          "layer": 1,
+          "passable": false,
+          "note": "cobble_pile (tileset3 시트B 발굴)"
+        },
+        "cracked_slab": {
+          "base_id": 43,
+          "layer": 1,
+          "passable": true,
+          "note": "cracked_slab (tileset3 시트B 발굴)"
+        },
+        "floor_crack": {
+          "base_id": 44,
+          "layer": 1,
+          "passable": true,
+          "note": "floor_crack (tileset3 시트B 발굴)"
+        },
+        "wall_hole": {
+          "base_id": 45,
+          "layer": 1,
+          "passable": true,
+          "note": "wall_hole (tileset3 시트B 발굴)"
+        },
+        "wall_hole2": {
+          "base_id": 46,
+          "layer": 1,
+          "passable": true,
+          "note": "wall_hole2 (tileset3 시트B 발굴)"
+        },
+        "wall_hole3": {
+          "base_id": 47,
+          "layer": 1,
+          "passable": true,
+          "note": "wall_hole3 (tileset3 시트B 발굴)"
+        },
+        "swords_cross": {
+          "base_id": 82,
+          "layer": 1,
+          "passable": true,
+          "note": "swords_cross (tileset3 시트B 발굴)"
+        },
+        "banner_white": {
+          "base_id": 86,
+          "layer": 1,
+          "passable": true,
+          "note": "banner_white (tileset3 시트B 발굴)"
+        },
+        "banner_gold": {
+          "base_id": 87,
+          "layer": 1,
+          "passable": true,
+          "note": "banner_gold (tileset3 시트B 발굴)"
+        },
+        "scroll": {
+          "base_id": 91,
+          "layer": 1,
+          "passable": true,
+          "note": "scroll (tileset3 시트B 발굴)"
+        },
+        "framed_blank": {
+          "base_id": 92,
+          "layer": 1,
+          "passable": true,
+          "note": "framed_blank (tileset3 시트B 발굴)"
+        },
+        "barred_window": {
+          "base_id": 94,
+          "layer": 1,
+          "passable": false,
+          "note": "barred_window (tileset3 시트B 발굴)"
+        },
+        "barred_window2": {
+          "base_id": 95,
+          "layer": 1,
+          "passable": false,
+          "note": "barred_window2 (tileset3 시트B 발굴)"
+        },
+        "ottoman_red": {
+          "base_id": 114,
+          "layer": 1,
+          "passable": false,
+          "note": "ottoman_red (tileset3 시트B 발굴)"
+        },
+        "ottoman_red2": {
+          "base_id": 122,
+          "layer": 1,
+          "passable": false,
+          "note": "ottoman_red2 (tileset3 시트B 발굴)"
+        },
+        "king_portrait": {
+          "base_id": 133,
+          "layer": 1,
+          "passable": false,
+          "note": "king_portrait (tileset3 시트B 발굴)"
+        },
+        "still_life": {
+          "base_id": 134,
+          "layer": 1,
+          "passable": false,
+          "note": "still_life (tileset3 시트B 발굴)"
+        },
+        "mountain_painting": {
+          "base_id": 135,
+          "layer": 1,
+          "passable": false,
+          "note": "mountain_painting (tileset3 시트B 발굴)"
+        },
+        "dish_shelf": {
+          "base_id": 140,
+          "layer": 1,
+          "passable": false,
+          "note": "dish_shelf (tileset3 시트B 발굴)"
+        },
+        "bottle_shelf": {
+          "base_id": 141,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_shelf (tileset3 시트B 발굴)"
+        },
+        "dish_shelf2": {
+          "base_id": 142,
+          "layer": 1,
+          "passable": false,
+          "note": "dish_shelf2 (tileset3 시트B 발굴)"
+        },
+        "bottle_shelf2": {
+          "base_id": 143,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_shelf2 (tileset3 시트B 발굴)"
+        },
+        "dish_cabinet": {
+          "base_id": 148,
+          "layer": 1,
+          "passable": false,
+          "note": "dish_cabinet (tileset3 시트B 발굴)"
+        },
+        "bottle_cabinet": {
+          "base_id": 149,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_cabinet (tileset3 시트B 발굴)"
+        },
+        "dish_cabinet2": {
+          "base_id": 150,
+          "layer": 1,
+          "passable": false,
+          "note": "dish_cabinet2 (tileset3 시트B 발굴)"
+        },
+        "bottle_cabinet2": {
+          "base_id": 151,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_cabinet2 (tileset3 시트B 발굴)"
+        },
+        "shelf_wood": {
+          "base_id": 154,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood (tileset3 시트B 발굴)"
+        },
+        "shelf_wood2": {
+          "base_id": 155,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood2 (tileset3 시트B 발굴)"
+        },
+        "shelf_wood3": {
+          "base_id": 156,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood3 (tileset3 시트B 발굴)"
+        },
+        "shelf_wood4": {
+          "base_id": 157,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood4 (tileset3 시트B 발굴)"
+        },
+        "shelf_wood5": {
+          "base_id": 158,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood5 (tileset3 시트B 발굴)"
+        },
+        "shelf_wood6": {
+          "base_id": 159,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_wood6 (tileset3 시트B 발굴)"
+        },
+        "teddy_shelf": {
+          "base_id": 162,
+          "layer": 1,
+          "passable": true,
+          "note": "teddy_shelf (tileset3 시트B 발굴)"
+        },
+        "food_shelf": {
+          "base_id": 163,
+          "layer": 1,
+          "passable": false,
+          "note": "food_shelf (tileset3 시트B 발굴)"
+        },
+        "jar_shelf": {
+          "base_id": 164,
+          "layer": 1,
+          "passable": false,
+          "note": "jar_shelf (tileset3 시트B 발굴)"
+        },
+        "book_shelf_blue": {
+          "base_id": 165,
+          "layer": 1,
+          "passable": true,
+          "note": "book_shelf_blue (tileset3 시트B 발굴)"
+        },
+        "book_shelf_green": {
+          "base_id": 166,
+          "layer": 1,
+          "passable": true,
+          "note": "book_shelf_green (tileset3 시트B 발굴)"
+        },
+        "book_shelf_red": {
+          "base_id": 167,
+          "layer": 1,
+          "passable": true,
+          "note": "book_shelf_red (tileset3 시트B 발굴)"
+        },
+        "potion_shelf": {
+          "base_id": 184,
+          "layer": 1,
+          "passable": true,
+          "note": "potion_shelf (tileset3 시트B 발굴)"
+        },
+        "book_shelf_small": {
+          "base_id": 185,
+          "layer": 1,
+          "passable": true,
+          "note": "book_shelf_small (tileset3 시트B 발굴)"
+        },
+        "barrel_grey": {
+          "base_id": 186,
+          "layer": 1,
+          "passable": false,
+          "note": "barrel_grey (tileset3 시트B 발굴)"
+        },
+        "barrel_brown": {
+          "base_id": 187,
+          "layer": 1,
+          "passable": false,
+          "note": "barrel_brown (tileset3 시트B 발굴)"
+        },
+        "barrel_grey2": {
+          "base_id": 188,
+          "layer": 1,
+          "passable": false,
+          "note": "barrel_grey2 (tileset3 시트B 발굴)"
+        },
+        "sack_shelf": {
+          "base_id": 192,
+          "layer": 1,
+          "passable": false,
+          "note": "sack_shelf (tileset3 시트B 발굴)"
+        },
+        "bottle_shelf3": {
+          "base_id": 193,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_shelf3 (tileset3 시트B 발굴)"
+        },
+        "stove_black": {
+          "base_id": 204,
+          "layer": 1,
+          "passable": false,
+          "note": "stove_black (tileset3 시트B 발굴)"
+        },
+        "oven_door": {
+          "base_id": 208,
+          "layer": 1,
+          "passable": false,
+          "note": "oven_door (tileset3 시트B 발굴)"
+        },
+        "sink_counter": {
+          "base_id": 209,
+          "layer": 1,
+          "passable": false,
+          "note": "sink_counter (tileset3 시트B 발굴)"
+        },
+        "counter_wood": {
+          "base_id": 210,
+          "layer": 1,
+          "passable": false,
+          "note": "counter_wood (tileset3 시트B 발굴)"
+        },
+        "counter_end": {
+          "base_id": 211,
+          "layer": 1,
+          "passable": false,
+          "note": "counter_end (tileset3 시트B 발굴)"
+        },
+        "plank_shelf": {
+          "base_id": 216,
+          "layer": 1,
+          "passable": false,
+          "note": "plank_shelf (tileset3 시트B 발굴)"
+        },
+        "jar_rope": {
+          "base_id": 218,
+          "layer": 1,
+          "passable": true,
+          "note": "jar_rope (tileset3 시트B 발굴)"
+        },
+        "barrel_wood": {
+          "base_id": 220,
+          "layer": 1,
+          "passable": false,
+          "note": "barrel_wood (tileset3 시트B 발굴)"
+        },
+        "barrel_wood2": {
+          "base_id": 221,
+          "layer": 1,
+          "passable": false,
+          "note": "barrel_wood2 (tileset3 시트B 발굴)"
+        },
+        "ladder_bracket": {
+          "base_id": 224,
+          "layer": 1,
+          "passable": false,
+          "note": "ladder_bracket (tileset3 시트B 발굴)"
+        },
+        "bucket_water": {
+          "base_id": 225,
+          "layer": 1,
+          "passable": false,
+          "note": "bucket_water (tileset3 시트B 발굴)"
+        },
+        "tub_empty": {
+          "base_id": 226,
+          "layer": 1,
+          "passable": false,
+          "note": "tub_empty (tileset3 시트B 발굴)"
+        },
+        "tub_food": {
+          "base_id": 227,
+          "layer": 1,
+          "passable": false,
+          "note": "tub_food (tileset3 시트B 발굴)"
+        },
+        "lumber": {
+          "base_id": 228,
+          "layer": 1,
+          "passable": false,
+          "note": "lumber (tileset3 시트B 발굴)"
+        },
+        "lumber2": {
+          "base_id": 229,
+          "layer": 1,
+          "passable": false,
+          "note": "lumber2 (tileset3 시트B 발굴)"
+        },
+        "crate": {
+          "base_id": 232,
+          "layer": 1,
+          "passable": true,
+          "note": "crate (tileset3 시트B 발굴)"
+        },
+        "crate2": {
+          "base_id": 233,
+          "layer": 1,
+          "passable": true,
+          "note": "crate2 (tileset3 시트B 발굴)"
+        },
+        "crate3": {
+          "base_id": 234,
+          "layer": 1,
+          "passable": true,
+          "note": "crate3 (tileset3 시트B 발굴)"
+        },
+        "crate4": {
+          "base_id": 235,
+          "layer": 1,
+          "passable": true,
+          "note": "crate4 (tileset3 시트B 발굴)"
+        },
+        "crate_x": {
+          "base_id": 236,
+          "layer": 1,
+          "passable": true,
+          "note": "crate_x (tileset3 시트B 발굴)"
+        },
+        "crate5": {
+          "base_id": 237,
+          "layer": 1,
+          "passable": true,
+          "note": "crate5 (tileset3 시트B 발굴)"
+        },
+        "crate6": {
+          "base_id": 238,
+          "layer": 1,
+          "passable": true,
+          "note": "crate6 (tileset3 시트B 발굴)"
+        },
+        "crate7": {
+          "base_id": 239,
+          "layer": 1,
+          "passable": true,
+          "note": "crate7 (tileset3 시트B 발굴)"
+        },
+        "food_crate": {
+          "base_id": 240,
+          "layer": 1,
+          "passable": true,
+          "note": "food_crate (tileset3 시트B 발굴)"
+        },
+        "tomato_crate": {
+          "base_id": 241,
+          "layer": 1,
+          "passable": true,
+          "note": "tomato_crate (tileset3 시트B 발굴)"
+        },
+        "crate8": {
+          "base_id": 242,
+          "layer": 1,
+          "passable": true,
+          "note": "crate8 (tileset3 시트B 발굴)"
+        },
+        "crate9": {
+          "base_id": 243,
+          "layer": 1,
+          "passable": true,
+          "note": "crate9 (tileset3 시트B 발굴)"
+        },
+        "broken_urn": {
+          "base_id": 244,
+          "layer": 1,
+          "passable": false,
+          "note": "broken_urn (tileset3 시트B 발굴)"
+        },
+        "bucket_items": {
+          "base_id": 245,
+          "layer": 1,
+          "passable": false,
+          "note": "bucket_items (tileset3 시트B 발굴)"
+        },
+        "round_table_small": {
+          "base_id": 247,
+          "layer": 1,
+          "passable": false,
+          "note": "round_table_small (tileset3 시트B 발굴)"
+        },
+        "tomato_crate2": {
+          "base_id": 248,
+          "layer": 1,
+          "passable": true,
+          "note": "tomato_crate2 (tileset3 시트B 발굴)"
+        },
+        "fish_crate": {
+          "base_id": 249,
+          "layer": 1,
+          "passable": true,
+          "note": "fish_crate (tileset3 시트B 발굴)"
+        },
+        "sack": {
+          "base_id": 250,
+          "layer": 1,
+          "passable": false,
+          "note": "sack (tileset3 시트B 발굴)"
+        },
+        "crate10": {
+          "base_id": 251,
+          "layer": 1,
+          "passable": true,
+          "note": "crate10 (tileset3 시트B 발굴)"
+        },
+        "metal_shelf": {
+          "base_id": 252,
+          "layer": 1,
+          "passable": false,
+          "note": "metal_shelf (tileset3 시트B 발굴)"
+        },
+        "metal_shelf2": {
+          "base_id": 253,
+          "layer": 1,
+          "passable": false,
+          "note": "metal_shelf2 (tileset3 시트B 발굴)"
+        },
+        "metal_shelf3": {
+          "base_id": 254,
+          "layer": 1,
+          "passable": false,
+          "note": "metal_shelf3 (tileset3 시트B 발굴)"
+        },
+        "metal_shelf4": {
+          "base_id": 255,
+          "layer": 1,
+          "passable": false,
+          "note": "metal_shelf4 (tileset3 시트B 발굴)"
+        },
+        "teapot": {
+          "base_id": 256,
+          "layer": 1,
+          "passable": true,
+          "note": "teapot (tileset3 시트C 발굴)"
+        },
+        "teapot2": {
+          "base_id": 257,
+          "layer": 1,
+          "passable": true,
+          "note": "teapot2 (tileset3 시트C 발굴)"
+        },
+        "coffee_cup": {
+          "base_id": 258,
+          "layer": 1,
+          "passable": true,
+          "note": "coffee_cup (tileset3 시트C 발굴)"
+        },
+        "tea_cup": {
+          "base_id": 259,
+          "layer": 1,
+          "passable": true,
+          "note": "tea_cup (tileset3 시트C 발굴)"
+        },
+        "pitcher": {
+          "base_id": 260,
+          "layer": 1,
+          "passable": true,
+          "note": "pitcher (tileset3 시트C 발굴)"
+        },
+        "jug_clay": {
+          "base_id": 261,
+          "layer": 1,
+          "passable": true,
+          "note": "jug_clay (tileset3 시트C 발굴)"
+        },
+        "pitcher2": {
+          "base_id": 262,
+          "layer": 1,
+          "passable": true,
+          "note": "pitcher2 (tileset3 시트C 발굴)"
+        },
+        "glass_blue": {
+          "base_id": 263,
+          "layer": 1,
+          "passable": true,
+          "note": "glass_blue (tileset3 시트C 발굴)"
+        },
+        "champagne": {
+          "base_id": 264,
+          "layer": 1,
+          "passable": true,
+          "note": "champagne (tileset3 시트C 발굴)"
+        },
+        "wine_bottle2": {
+          "base_id": 265,
+          "layer": 1,
+          "passable": true,
+          "note": "wine_bottle2 (tileset3 시트C 발굴)"
+        },
+        "goblet_green": {
+          "base_id": 267,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_green (tileset3 시트C 발굴)"
+        },
+        "goblet_empty": {
+          "base_id": 268,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_empty (tileset3 시트C 발굴)"
+        },
+        "goblet_glass": {
+          "base_id": 269,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_glass (tileset3 시트C 발굴)"
+        },
+        "goblet_gold": {
+          "base_id": 270,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_gold (tileset3 시트C 발굴)"
+        },
+        "goblet_empty2": {
+          "base_id": 271,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_empty2 (tileset3 시트C 발굴)"
+        },
+        "jug_ale": {
+          "base_id": 272,
+          "layer": 1,
+          "passable": true,
+          "note": "jug_ale (tileset3 시트C 발굴)"
+        },
+        "jug_gold": {
+          "base_id": 273,
+          "layer": 1,
+          "passable": true,
+          "note": "jug_gold (tileset3 시트C 발굴)"
+        },
+        "beer_mug": {
+          "base_id": 274,
+          "layer": 1,
+          "passable": true,
+          "note": "beer_mug (tileset3 시트C 발굴)"
+        },
+        "pancakes": {
+          "base_id": 275,
+          "layer": 1,
+          "passable": true,
+          "note": "pancakes (tileset3 시트C 발굴)"
+        },
+        "mug_empty": {
+          "base_id": 276,
+          "layer": 1,
+          "passable": true,
+          "note": "mug_empty (tileset3 시트C 발굴)"
+        },
+        "beer_foam": {
+          "base_id": 277,
+          "layer": 1,
+          "passable": true,
+          "note": "beer_foam (tileset3 시트C 발굴)"
+        },
+        "wine_glass": {
+          "base_id": 278,
+          "layer": 1,
+          "passable": true,
+          "note": "wine_glass (tileset3 시트C 발굴)"
+        },
+        "goblet_silver": {
+          "base_id": 279,
+          "layer": 1,
+          "passable": true,
+          "note": "goblet_silver (tileset3 시트C 발굴)"
+        },
+        "bottle_oil": {
+          "base_id": 280,
+          "layer": 1,
+          "passable": true,
+          "note": "bottle_oil (tileset3 시트C 발굴)"
+        },
+        "flambe_pan": {
+          "base_id": 281,
+          "layer": 1,
+          "passable": false,
+          "note": "flambe_pan (tileset3 시트C 발굴)"
+        },
+        "bottles_green": {
+          "base_id": 282,
+          "layer": 1,
+          "passable": true,
+          "note": "bottles_green (tileset3 시트C 발굴)"
+        },
+        "wine_bottles": {
+          "base_id": 283,
+          "layer": 1,
+          "passable": true,
+          "note": "wine_bottles (tileset3 시트C 발굴)"
+        },
+        "bottles_amber": {
+          "base_id": 284,
+          "layer": 1,
+          "passable": true,
+          "note": "bottles_amber (tileset3 시트C 발굴)"
+        },
+        "steins": {
+          "base_id": 285,
+          "layer": 1,
+          "passable": true,
+          "note": "steins (tileset3 시트C 발굴)"
+        },
+        "beer_mug2": {
+          "base_id": 286,
+          "layer": 1,
+          "passable": true,
+          "note": "beer_mug2 (tileset3 시트C 발굴)"
+        },
+        "cups_tray": {
+          "base_id": 287,
+          "layer": 1,
+          "passable": true,
+          "note": "cups_tray (tileset3 시트C 발굴)"
+        },
+        "roast_turkey": {
+          "base_id": 289,
+          "layer": 1,
+          "passable": true,
+          "note": "roast_turkey (tileset3 시트C 발굴)"
+        },
+        "veggie_plate": {
+          "base_id": 290,
+          "layer": 1,
+          "passable": true,
+          "note": "veggie_plate (tileset3 시트C 발굴)"
+        },
+        "grape_plate": {
+          "base_id": 291,
+          "layer": 1,
+          "passable": true,
+          "note": "grape_plate (tileset3 시트C 발굴)"
+        },
+        "fruit_platter": {
+          "base_id": 292,
+          "layer": 1,
+          "passable": true,
+          "note": "fruit_platter (tileset3 시트C 발굴)"
+        },
+        "roast_meat": {
+          "base_id": 293,
+          "layer": 1,
+          "passable": true,
+          "note": "roast_meat (tileset3 시트C 발굴)"
+        },
+        "casserole": {
+          "base_id": 294,
+          "layer": 1,
+          "passable": true,
+          "note": "casserole (tileset3 시트C 발굴)"
+        },
+        "dessert_tray": {
+          "base_id": 295,
+          "layer": 1,
+          "passable": true,
+          "note": "dessert_tray (tileset3 시트C 발굴)"
+        },
+        "steak_plate": {
+          "base_id": 296,
+          "layer": 1,
+          "passable": true,
+          "note": "steak_plate (tileset3 시트C 발굴)"
+        },
+        "meal_set": {
+          "base_id": 297,
+          "layer": 1,
+          "passable": true,
+          "note": "meal_set (tileset3 시트C 발굴)"
+        },
+        "meal_set2": {
+          "base_id": 298,
+          "layer": 1,
+          "passable": true,
+          "note": "meal_set2 (tileset3 시트C 발굴)"
+        },
+        "meal_set3": {
+          "base_id": 299,
+          "layer": 1,
+          "passable": true,
+          "note": "meal_set3 (tileset3 시트C 발굴)"
+        },
+        "pizza": {
+          "base_id": 300,
+          "layer": 1,
+          "passable": true,
+          "note": "pizza (tileset3 시트C 발굴)"
+        },
+        "flatbread": {
+          "base_id": 301,
+          "layer": 1,
+          "passable": true,
+          "note": "flatbread (tileset3 시트C 발굴)"
+        },
+        "stew_pot": {
+          "base_id": 302,
+          "layer": 1,
+          "passable": true,
+          "note": "stew_pot (tileset3 시트C 발굴)"
+        },
+        "lobster_dish": {
+          "base_id": 303,
+          "layer": 1,
+          "passable": true,
+          "note": "lobster_dish (tileset3 시트C 발굴)"
+        },
+        "breakfast": {
+          "base_id": 304,
+          "layer": 1,
+          "passable": true,
+          "note": "breakfast (tileset3 시트C 발굴)"
+        },
+        "pancake_plate": {
+          "base_id": 305,
+          "layer": 1,
+          "passable": true,
+          "note": "pancake_plate (tileset3 시트C 발굴)"
+        },
+        "eggs_bacon": {
+          "base_id": 306,
+          "layer": 1,
+          "passable": true,
+          "note": "eggs_bacon (tileset3 시트C 발굴)"
+        },
+        "cheese_board": {
+          "base_id": 307,
+          "layer": 1,
+          "passable": true,
+          "note": "cheese_board (tileset3 시트C 발굴)"
+        },
+        "bread_board": {
+          "base_id": 308,
+          "layer": 1,
+          "passable": true,
+          "note": "bread_board (tileset3 시트C 발굴)"
+        },
+        "soup_pot": {
+          "base_id": 309,
+          "layer": 1,
+          "passable": true,
+          "note": "soup_pot (tileset3 시트C 발굴)"
+        },
+        "mushroom_dish": {
+          "base_id": 310,
+          "layer": 1,
+          "passable": true,
+          "note": "mushroom_dish (tileset3 시트C 발굴)"
+        },
+        "cherry_pie": {
+          "base_id": 311,
+          "layer": 1,
+          "passable": true,
+          "note": "cherry_pie (tileset3 시트C 발굴)"
+        },
+        "keg": {
+          "base_id": 312,
+          "layer": 1,
+          "passable": false,
+          "note": "keg (tileset3 시트C 발굴)"
+        },
+        "keg2": {
+          "base_id": 313,
+          "layer": 1,
+          "passable": false,
+          "note": "keg2 (tileset3 시트C 발굴)"
+        },
+        "plates_stack": {
+          "base_id": 314,
+          "layer": 1,
+          "passable": true,
+          "note": "plates_stack (tileset3 시트C 발굴)"
+        },
+        "plates": {
+          "base_id": 315,
+          "layer": 1,
+          "passable": true,
+          "note": "plates (tileset3 시트C 발굴)"
+        },
+        "plate_empty": {
+          "base_id": 316,
+          "layer": 1,
+          "passable": true,
+          "note": "plate_empty (tileset3 시트C 발굴)"
+        },
+        "cutting_board": {
+          "base_id": 317,
+          "layer": 1,
+          "passable": false,
+          "note": "cutting_board (tileset3 시트C 발굴)"
+        },
+        "copper_pot": {
+          "base_id": 318,
+          "layer": 1,
+          "passable": false,
+          "note": "copper_pot (tileset3 시트C 발굴)"
+        },
+        "frying_pan": {
+          "base_id": 319,
+          "layer": 1,
+          "passable": false,
+          "note": "frying_pan (tileset3 시트C 발굴)"
+        },
+        "book_gold": {
+          "base_id": 321,
+          "layer": 1,
+          "passable": true,
+          "note": "book_gold (tileset3 시트C 발굴)"
+        },
+        "book_blue": {
+          "base_id": 322,
+          "layer": 1,
+          "passable": true,
+          "note": "book_blue (tileset3 시트C 발굴)"
+        },
+        "book_open_blue": {
+          "base_id": 323,
+          "layer": 1,
+          "passable": true,
+          "note": "book_open_blue (tileset3 시트C 발굴)"
+        },
+        "book_open": {
+          "base_id": 324,
+          "layer": 1,
+          "passable": true,
+          "note": "book_open (tileset3 시트C 발굴)"
+        },
+        "book_open_text": {
+          "base_id": 325,
+          "layer": 1,
+          "passable": true,
+          "note": "book_open_text (tileset3 시트C 발굴)"
+        },
+        "spellbook": {
+          "base_id": 326,
+          "layer": 1,
+          "passable": true,
+          "note": "spellbook (tileset3 시트C 발굴)"
+        },
+        "tome_locked": {
+          "base_id": 327,
+          "layer": 1,
+          "passable": true,
+          "note": "tome_locked (tileset3 시트C 발굴)"
+        },
+        "text_page": {
+          "base_id": 328,
+          "layer": 1,
+          "passable": true,
+          "note": "text_page (tileset3 시트C 발굴)"
+        },
+        "parchment_text": {
+          "base_id": 329,
+          "layer": 1,
+          "passable": true,
+          "note": "parchment_text (tileset3 시트C 발굴)"
+        },
+        "parchment_blank": {
+          "base_id": 330,
+          "layer": 1,
+          "passable": true,
+          "note": "parchment_blank (tileset3 시트C 발굴)"
+        },
+        "quill_ink": {
+          "base_id": 331,
+          "layer": 1,
+          "passable": true,
+          "note": "quill_ink (tileset3 시트C 발굴)"
+        },
+        "scroll_map": {
+          "base_id": 332,
+          "layer": 1,
+          "passable": true,
+          "note": "scroll_map (tileset3 시트C 발굴)"
+        },
+        "treasure_map": {
+          "base_id": 333,
+          "layer": 1,
+          "passable": true,
+          "note": "treasure_map (tileset3 시트C 발굴)"
+        },
+        "scroll_text": {
+          "base_id": 334,
+          "layer": 1,
+          "passable": true,
+          "note": "scroll_text (tileset3 시트C 발굴)"
+        },
+        "scroll_text2": {
+          "base_id": 335,
+          "layer": 1,
+          "passable": true,
+          "note": "scroll_text2 (tileset3 시트C 발굴)"
+        },
+        "papers": {
+          "base_id": 336,
+          "layer": 1,
+          "passable": true,
+          "note": "papers (tileset3 시트C 발굴)"
+        },
+        "letter": {
+          "base_id": 337,
+          "layer": 1,
+          "passable": true,
+          "note": "letter (tileset3 시트C 발굴)"
+        },
+        "fireworks": {
+          "base_id": 338,
+          "layer": 1,
+          "passable": true,
+          "note": "fireworks (tileset3 시트C 발굴)"
+        },
+        "scroll_bundle": {
+          "base_id": 339,
+          "layer": 1,
+          "passable": true,
+          "note": "scroll_bundle (tileset3 시트C 발굴)"
+        },
+        "flowerbox_yellow": {
+          "base_id": 340,
+          "layer": 1,
+          "passable": true,
+          "note": "flowerbox_yellow (tileset3 시트C 발굴)"
+        },
+        "flowerbox_red": {
+          "base_id": 341,
+          "layer": 1,
+          "passable": true,
+          "note": "flowerbox_red (tileset3 시트C 발굴)"
+        },
+        "plant_pot2": {
+          "base_id": 343,
+          "layer": 1,
+          "passable": false,
+          "note": "plant_pot2 (tileset3 시트C 발굴)"
+        },
+        "jewelry_box": {
+          "base_id": 344,
+          "layer": 1,
+          "passable": true,
+          "note": "jewelry_box (tileset3 시트C 발굴)"
+        },
+        "treasure_chest": {
+          "base_id": 345,
+          "layer": 1,
+          "passable": false,
+          "note": "treasure_chest (tileset3 시트C 발굴)"
+        },
+        "wood_chest": {
+          "base_id": 346,
+          "layer": 1,
+          "passable": false,
+          "note": "wood_chest (tileset3 시트C 발굴)"
+        },
+        "hourglass": {
+          "base_id": 347,
+          "layer": 1,
+          "passable": true,
+          "note": "hourglass (tileset3 시트C 발굴)"
+        },
+        "shelf_empty": {
+          "base_id": 348,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_empty (tileset3 시트C 발굴)"
+        },
+        "shelf_jars": {
+          "base_id": 349,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_jars (tileset3 시트C 발굴)"
+        },
+        "shelf_items": {
+          "base_id": 350,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_items (tileset3 시트C 발굴)"
+        },
+        "shelf_key": {
+          "base_id": 351,
+          "layer": 1,
+          "passable": false,
+          "note": "shelf_key (tileset3 시트C 발굴)"
+        },
+        "rat": {
+          "base_id": 352,
+          "layer": 1,
+          "passable": true,
+          "note": "rat (tileset3 시트C 발굴)"
+        },
+        "money_bags": {
+          "base_id": 353,
+          "layer": 1,
+          "passable": true,
+          "note": "money_bags (tileset3 시트C 발굴)"
+        },
+        "salt_pepper": {
+          "base_id": 354,
+          "layer": 1,
+          "passable": true,
+          "note": "salt_pepper (tileset3 시트C 발굴)"
+        },
+        "potion_blue2": {
+          "base_id": 355,
+          "layer": 1,
+          "passable": true,
+          "note": "potion_blue2 (tileset3 시트C 발굴)"
+        },
+        "potion_purple": {
+          "base_id": 357,
+          "layer": 1,
+          "passable": true,
+          "note": "potion_purple (tileset3 시트C 발굴)"
+        },
+        "potion_green": {
+          "base_id": 358,
+          "layer": 1,
+          "passable": true,
+          "note": "potion_green (tileset3 시트C 발굴)"
+        },
+        "potion_red": {
+          "base_id": 359,
+          "layer": 1,
+          "passable": true,
+          "note": "potion_red (tileset3 시트C 발굴)"
+        },
+        "basket_apples": {
+          "base_id": 361,
+          "layer": 1,
+          "passable": false,
+          "note": "basket_apples (tileset3 시트C 발굴)"
+        },
+        "basket_fruit": {
+          "base_id": 362,
+          "layer": 1,
+          "passable": true,
+          "note": "basket_fruit (tileset3 시트C 발굴)"
+        },
+        "basket_bread": {
+          "base_id": 363,
+          "layer": 1,
+          "passable": true,
+          "note": "basket_bread (tileset3 시트C 발굴)"
+        },
+        "cloth_pink": {
+          "base_id": 364,
+          "layer": 1,
+          "passable": true,
+          "note": "cloth_pink (tileset3 시트C 발굴)"
+        },
+        "cloth_blue": {
+          "base_id": 365,
+          "layer": 1,
+          "passable": true,
+          "note": "cloth_blue (tileset3 시트C 발굴)"
+        },
+        "cloth_plaid": {
+          "base_id": 366,
+          "layer": 1,
+          "passable": true,
+          "note": "cloth_plaid (tileset3 시트C 발굴)"
+        },
+        "gold_scale": {
+          "base_id": 367,
+          "layer": 1,
+          "passable": true,
+          "note": "gold_scale (tileset3 시트C 발굴)"
+        },
+        "teddy_blue": {
+          "base_id": 369,
+          "layer": 1,
+          "passable": true,
+          "note": "teddy_blue (tileset3 시트C 발굴)"
+        },
+        "teddy_yellow": {
+          "base_id": 370,
+          "layer": 1,
+          "passable": true,
+          "note": "teddy_yellow (tileset3 시트C 발굴)"
+        },
+        "doll_red": {
+          "base_id": 371,
+          "layer": 1,
+          "passable": true,
+          "note": "doll_red (tileset3 시트C 발굴)"
+        },
+        "doll_black": {
+          "base_id": 372,
+          "layer": 1,
+          "passable": true,
+          "note": "doll_black (tileset3 시트C 발굴)"
+        },
+        "doll_boy": {
+          "base_id": 373,
+          "layer": 1,
+          "passable": true,
+          "note": "doll_boy (tileset3 시트C 발굴)"
+        },
+        "gift_red": {
+          "base_id": 374,
+          "layer": 1,
+          "passable": true,
+          "note": "gift_red (tileset3 시트C 발굴)"
+        },
+        "gift_teal": {
+          "base_id": 375,
+          "layer": 1,
+          "passable": true,
+          "note": "gift_teal (tileset3 시트C 발굴)"
+        },
+        "globe": {
+          "base_id": 376,
+          "layer": 1,
+          "passable": true,
+          "note": "globe (tileset3 시트C 발굴)"
+        },
+        "hand_bell": {
+          "base_id": 377,
+          "layer": 1,
+          "passable": true,
+          "note": "hand_bell (tileset3 시트C 발굴)"
+        },
+        "magic_circle": {
+          "base_id": 378,
+          "layer": 1,
+          "passable": false,
+          "note": "magic_circle (tileset3 시트C 발굴)"
+        },
+        "crystal_ball": {
+          "base_id": 379,
+          "layer": 1,
+          "passable": true,
+          "note": "crystal_ball (tileset3 시트C 발굴)"
+        },
+        "display_case": {
+          "base_id": 380,
+          "layer": 1,
+          "passable": false,
+          "note": "display_case (tileset3 시트C 발굴)"
+        },
+        "necklace_stand": {
+          "base_id": 381,
+          "layer": 1,
+          "passable": true,
+          "note": "necklace_stand (tileset3 시트C 발굴)"
+        },
+        "reliquary": {
+          "base_id": 382,
+          "layer": 1,
+          "passable": false,
+          "note": "reliquary (tileset3 시트C 발굴)"
+        },
+        "jewelry_display": {
+          "base_id": 383,
+          "layer": 1,
+          "passable": true,
+          "note": "jewelry_display (tileset3 시트C 발굴)"
+        },
+        "sword_gold": {
+          "base_id": 384,
+          "layer": 1,
+          "passable": false,
+          "note": "sword_gold (tileset3 시트C 발굴)"
+        },
+        "swords_pair": {
+          "base_id": 385,
+          "layer": 1,
+          "passable": false,
+          "note": "swords_pair (tileset3 시트C 발굴)"
+        },
+        "swords_x": {
+          "base_id": 386,
+          "layer": 1,
+          "passable": false,
+          "note": "swords_x (tileset3 시트C 발굴)"
+        },
+        "axes_x": {
+          "base_id": 387,
+          "layer": 1,
+          "passable": false,
+          "note": "axes_x (tileset3 시트C 발굴)"
+        },
+        "staves": {
+          "base_id": 388,
+          "layer": 1,
+          "passable": false,
+          "note": "staves (tileset3 시트C 발굴)"
+        },
+        "staff": {
+          "base_id": 389,
+          "layer": 1,
+          "passable": false,
+          "note": "staff (tileset3 시트C 발굴)"
+        },
+        "whip": {
+          "base_id": 390,
+          "layer": 1,
+          "passable": false,
+          "note": "whip (tileset3 시트C 발굴)"
+        },
+        "daggers": {
+          "base_id": 391,
+          "layer": 1,
+          "passable": false,
+          "note": "daggers (tileset3 시트C 발굴)"
+        },
+        "kitchen_tools": {
+          "base_id": 392,
+          "layer": 1,
+          "passable": false,
+          "note": "kitchen_tools (tileset3 시트C 발굴)"
+        },
+        "butcher_meat": {
+          "base_id": 393,
+          "layer": 1,
+          "passable": true,
+          "note": "butcher_meat (tileset3 시트C 발굴)"
+        },
+        "shield_orange": {
+          "base_id": 394,
+          "layer": 1,
+          "passable": true,
+          "note": "shield_orange (tileset3 시트C 발굴)"
+        },
+        "shield_wood": {
+          "base_id": 395,
+          "layer": 1,
+          "passable": true,
+          "note": "shield_wood (tileset3 시트C 발굴)"
+        },
+        "robe_blue": {
+          "base_id": 396,
+          "layer": 1,
+          "passable": false,
+          "note": "robe_blue (tileset3 시트C 발굴)"
+        },
+        "robe_red": {
+          "base_id": 397,
+          "layer": 1,
+          "passable": false,
+          "note": "robe_red (tileset3 시트C 발굴)"
+        },
+        "dress_noble": {
+          "base_id": 398,
+          "layer": 1,
+          "passable": false,
+          "note": "dress_noble (tileset3 시트C 발굴)"
+        },
+        "dress_white": {
+          "base_id": 399,
+          "layer": 1,
+          "passable": false,
+          "note": "dress_white (tileset3 시트C 발굴)"
+        },
+        "wood_rack": {
+          "base_id": 400,
+          "layer": 1,
+          "passable": false,
+          "note": "wood_rack (tileset3 시트C 발굴)"
+        },
+        "armor_rack": {
+          "base_id": 401,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_rack (tileset3 시트C 발굴)"
+        },
+        "smith_tools": {
+          "base_id": 402,
+          "layer": 1,
+          "passable": false,
+          "note": "smith_tools (tileset3 시트C 발굴)"
+        },
+        "anvil_tools": {
+          "base_id": 403,
+          "layer": 1,
+          "passable": false,
+          "note": "anvil_tools (tileset3 시트C 발굴)"
+        },
+        "anvil": {
+          "base_id": 404,
+          "layer": 1,
+          "passable": false,
+          "note": "anvil (tileset3 시트C 발굴)"
+        },
+        "anvil2": {
+          "base_id": 405,
+          "layer": 1,
+          "passable": false,
+          "note": "anvil2 (tileset3 시트C 발굴)"
+        },
+        "forge_trough": {
+          "base_id": 406,
+          "layer": 1,
+          "passable": false,
+          "note": "forge_trough (tileset3 시트C 발굴)"
+        },
+        "coal_bin": {
+          "base_id": 407,
+          "layer": 1,
+          "passable": false,
+          "note": "coal_bin (tileset3 시트C 발굴)"
+        },
+        "helmet_gold": {
+          "base_id": 408,
+          "layer": 1,
+          "passable": false,
+          "note": "helmet_gold (tileset3 시트C 발굴)"
+        },
+        "helmet_silver": {
+          "base_id": 409,
+          "layer": 1,
+          "passable": false,
+          "note": "helmet_silver (tileset3 시트C 발굴)"
+        },
+        "helmet_purple": {
+          "base_id": 410,
+          "layer": 1,
+          "passable": false,
+          "note": "helmet_purple (tileset3 시트C 발굴)"
+        },
+        "helmet_blue": {
+          "base_id": 411,
+          "layer": 1,
+          "passable": false,
+          "note": "helmet_blue (tileset3 시트C 발굴)"
+        },
+        "hat_red": {
+          "base_id": 412,
+          "layer": 1,
+          "passable": false,
+          "note": "hat_red (tileset3 시트C 발굴)"
+        },
+        "hat_purple": {
+          "base_id": 413,
+          "layer": 1,
+          "passable": false,
+          "note": "hat_purple (tileset3 시트C 발굴)"
+        },
+        "armor_red": {
+          "base_id": 414,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_red (tileset3 시트C 발굴)"
+        },
+        "armor_redgold": {
+          "base_id": 415,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_redgold (tileset3 시트C 발굴)"
+        },
+        "armor_blue": {
+          "base_id": 416,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_blue (tileset3 시트C 발굴)"
+        },
+        "armor_silver": {
+          "base_id": 417,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_silver (tileset3 시트C 발굴)"
+        },
+        "armor_purple": {
+          "base_id": 418,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_purple (tileset3 시트C 발굴)"
+        },
+        "armor_winged": {
+          "base_id": 419,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_winged (tileset3 시트C 발굴)"
+        },
+        "robe_cape": {
+          "base_id": 420,
+          "layer": 1,
+          "passable": false,
+          "note": "robe_cape (tileset3 시트C 발굴)"
+        },
+        "robe_white": {
+          "base_id": 421,
+          "layer": 1,
+          "passable": false,
+          "note": "robe_white (tileset3 시트C 발굴)"
+        },
+        "armor_gold": {
+          "base_id": 422,
+          "layer": 1,
+          "passable": false,
+          "note": "armor_gold (tileset3 시트C 발굴)"
+        },
+        "dress_green": {
+          "base_id": 423,
+          "layer": 1,
+          "passable": false,
+          "note": "dress_green (tileset3 시트C 발굴)"
+        },
+        "candelabra": {
+          "base_id": 424,
+          "layer": 1,
+          "passable": false,
+          "note": "candelabra (tileset3 시트C 발굴)"
+        },
+        "statue_cherub": {
+          "base_id": 425,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_cherub (tileset3 시트C 발굴)"
+        },
+        "statue_gold": {
+          "base_id": 426,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_gold (tileset3 시트C 발굴)"
+        },
+        "statue_knight": {
+          "base_id": 427,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_knight (tileset3 시트C 발굴)"
+        },
+        "statue_knight2": {
+          "base_id": 428,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_knight2 (tileset3 시트C 발굴)"
+        },
+        "statue_knight3": {
+          "base_id": 429,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_knight3 (tileset3 시트C 발굴)"
+        },
+        "pedestal": {
+          "base_id": 432,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal (tileset3 시트C 발굴)"
+        },
+        "pedestal_carved": {
+          "base_id": 433,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal_carved (tileset3 시트C 발굴)"
+        },
+        "pedestal_gold": {
+          "base_id": 434,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal_gold (tileset3 시트C 발굴)"
+        },
+        "pedestal_statue": {
+          "base_id": 435,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal_statue (tileset3 시트C 발굴)"
+        },
+        "pedestal_knight": {
+          "base_id": 436,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal_knight (tileset3 시트C 발굴)"
+        },
+        "rubble_pile": {
+          "base_id": 437,
+          "layer": 1,
+          "passable": false,
+          "note": "rubble_pile (tileset3 시트C 발굴)"
+        },
+        "pedestal_round": {
+          "base_id": 440,
+          "layer": 1,
+          "passable": false,
+          "note": "pedestal_round (tileset3 시트C 발굴)"
+        },
+        "stone_base": {
+          "base_id": 441,
+          "layer": 1,
+          "passable": false,
+          "note": "stone_base (tileset3 시트C 발굴)"
+        },
+        "gold_base": {
+          "base_id": 442,
+          "layer": 1,
+          "passable": false,
+          "note": "gold_base (tileset3 시트C 발굴)"
+        },
+        "stone_base2": {
+          "base_id": 443,
+          "layer": 1,
+          "passable": false,
+          "note": "stone_base2 (tileset3 시트C 발굴)"
+        },
+        "column_base": {
+          "base_id": 445,
+          "layer": 1,
+          "passable": false,
+          "note": "column_base (tileset3 시트C 발굴)"
+        },
+        "column_capital": {
+          "base_id": 446,
+          "layer": 1,
+          "passable": false,
+          "note": "column_capital (tileset3 시트C 발굴)"
+        },
+        "column_frieze": {
+          "base_id": 447,
+          "layer": 1,
+          "passable": false,
+          "note": "column_frieze (tileset3 시트C 발굴)"
+        },
+        "crown_stone": {
+          "base_id": 451,
+          "layer": 1,
+          "passable": false,
+          "note": "crown_stone (tileset3 시트C 발굴)"
+        },
+        "column_carved": {
+          "base_id": 453,
+          "layer": 1,
+          "passable": false,
+          "note": "column_carved (tileset3 시트C 발굴)"
+        },
+        "column_cracked": {
+          "base_id": 454,
+          "layer": 1,
+          "passable": true,
+          "note": "column_cracked (tileset3 시트C 발굴)"
+        },
+        "column_damaged": {
+          "base_id": 455,
+          "layer": 1,
+          "passable": false,
+          "note": "column_damaged (tileset3 시트C 발굴)"
+        },
+        "gold_bars": {
+          "base_id": 456,
+          "layer": 1,
+          "passable": true,
+          "note": "gold_bars (tileset3 시트C 발굴)"
+        },
+        "gold_bars2": {
+          "base_id": 457,
+          "layer": 1,
+          "passable": true,
+          "note": "gold_bars2 (tileset3 시트C 발굴)"
+        },
+        "metal_crate": {
+          "base_id": 458,
+          "layer": 1,
+          "passable": true,
+          "note": "metal_crate (tileset3 시트C 발굴)"
+        },
+        "metal_box": {
+          "base_id": 459,
+          "layer": 1,
+          "passable": false,
+          "note": "metal_box (tileset3 시트C 발굴)"
+        },
+        "column_base2": {
+          "base_id": 460,
+          "layer": 1,
+          "passable": false,
+          "note": "column_base2 (tileset3 시트C 발굴)"
+        },
+        "pillar_base": {
+          "base_id": 461,
+          "layer": 1,
+          "passable": false,
+          "note": "pillar_base (tileset3 시트C 발굴)"
+        },
+        "cracked_stone": {
+          "base_id": 462,
+          "layer": 1,
+          "passable": true,
+          "note": "cracked_stone (tileset3 시트C 발굴)"
+        },
+        "stone_wall": {
+          "base_id": 463,
+          "layer": 1,
+          "passable": false,
+          "note": "stone_wall (tileset3 시트C 발굴)"
+        },
+        "tombstone": {
+          "base_id": 464,
+          "layer": 1,
+          "passable": false,
+          "note": "tombstone (tileset3 시트C 발굴)"
+        },
+        "tombstone2": {
+          "base_id": 465,
+          "layer": 1,
+          "passable": false,
+          "note": "tombstone2 (tileset3 시트C 발굴)"
+        },
+        "statue_demon": {
+          "base_id": 466,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_demon (tileset3 시트C 발굴)"
+        },
+        "statue_demon2": {
+          "base_id": 467,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_demon2 (tileset3 시트C 발굴)"
+        },
+        "statue_dark": {
+          "base_id": 468,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_dark (tileset3 시트C 발굴)"
+        },
+        "statue_dark2": {
+          "base_id": 469,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_dark2 (tileset3 시트C 발굴)"
+        },
+        "shrine_stone": {
+          "base_id": 470,
+          "layer": 1,
+          "passable": false,
+          "note": "shrine_stone (tileset3 시트C 발굴)"
+        },
+        "shrine_stone2": {
+          "base_id": 471,
+          "layer": 1,
+          "passable": false,
+          "note": "shrine_stone2 (tileset3 시트C 발굴)"
+        },
+        "tombstone3": {
+          "base_id": 472,
+          "layer": 1,
+          "passable": false,
+          "note": "tombstone3 (tileset3 시트C 발굴)"
+        },
+        "coffin": {
+          "base_id": 473,
+          "layer": 1,
+          "passable": false,
+          "note": "coffin (tileset3 시트C 발굴)"
+        },
+        "throne_king": {
+          "base_id": 474,
+          "layer": 1,
+          "passable": false,
+          "note": "throne_king (tileset3 시트C 발굴)"
+        },
+        "statue_dragon": {
+          "base_id": 475,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_dragon (tileset3 시트C 발굴)"
+        },
+        "statue_gargoyle": {
+          "base_id": 476,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_gargoyle (tileset3 시트C 발굴)"
+        },
+        "statue_dark3": {
+          "base_id": 477,
+          "layer": 1,
+          "passable": false,
+          "note": "statue_dark3 (tileset3 시트C 발굴)"
+        },
+        "railing_dark": {
+          "base_id": 488,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark (tileset3 시트C 발굴)"
+        },
+        "railing_post": {
+          "base_id": 489,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_post (tileset3 시트C 발굴)"
+        },
+        "railing_dark2": {
+          "base_id": 491,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark2 (tileset3 시트C 발굴)"
+        },
+        "railing_dark3": {
+          "base_id": 496,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark3 (tileset3 시트C 발굴)"
+        },
+        "railing_post_b": {
+          "base_id": 497,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_post_b (tileset3 시트C 발굴)"
+        },
+        "railing_dark4": {
+          "base_id": 499,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark4 (tileset3 시트C 발굴)"
+        },
+        "railing_dark5": {
+          "base_id": 504,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark5 (tileset3 시트C 발굴)"
+        },
+        "railing_post_base": {
+          "base_id": 505,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_post_base (tileset3 시트C 발굴)"
+        },
+        "railing_dark6": {
+          "base_id": 507,
+          "layer": 1,
+          "passable": false,
+          "note": "railing_dark6 (tileset3 시트C 발굴)"
+        },
+        "dirt_floor": {
+          "base_id": 1537,
+          "layer": 0,
+          "passable": true,
+          "note": "dirt_floor (tileset3 A5 발굴)"
+        },
+        "stone_wall_a": {
+          "base_id": 1538,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_a (tileset3 A5 발굴)"
+        },
+        "stone_wall_b": {
+          "base_id": 1539,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_b (tileset3 A5 발굴)"
+        },
+        "stone_wall_c": {
+          "base_id": 1540,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_c (tileset3 A5 발굴)"
+        },
+        "stone_wall_d": {
+          "base_id": 1541,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_d (tileset3 A5 발굴)"
+        },
+        "brick_wall_grey": {
+          "base_id": 1542,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_wall_grey (tileset3 A5 발굴)"
+        },
+        "brick_wall_grey2": {
+          "base_id": 1543,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_wall_grey2 (tileset3 A5 발굴)"
+        },
+        "dirt_floor2": {
+          "base_id": 1545,
+          "layer": 0,
+          "passable": true,
+          "note": "dirt_floor2 (tileset3 A5 발굴)"
+        },
+        "stone_wall_e": {
+          "base_id": 1546,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_e (tileset3 A5 발굴)"
+        },
+        "stone_wall_f": {
+          "base_id": 1547,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_f (tileset3 A5 발굴)"
+        },
+        "stone_wall_g": {
+          "base_id": 1548,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_g (tileset3 A5 발굴)"
+        },
+        "stone_wall_h": {
+          "base_id": 1549,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_h (tileset3 A5 발굴)"
+        },
+        "stone_wall_i": {
+          "base_id": 1550,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_i (tileset3 A5 발굴)"
+        },
+        "stone_wall_j": {
+          "base_id": 1551,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_j (tileset3 A5 발굴)"
+        },
+        "wood_floor_a": {
+          "base_id": 1552,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_a (tileset3 A5 발굴)"
+        },
+        "wood_floor_b": {
+          "base_id": 1553,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_b (tileset3 A5 발굴)"
+        },
+        "wood_floor_c": {
+          "base_id": 1554,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_c (tileset3 A5 발굴)"
+        },
+        "wood_floor_d": {
+          "base_id": 1555,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_d (tileset3 A5 발굴)"
+        },
+        "tile_floor_grey": {
+          "base_id": 1556,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_floor_grey (tileset3 A5 발굴)"
+        },
+        "tile_floor_tan": {
+          "base_id": 1557,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_floor_tan (tileset3 A5 발굴)"
+        },
+        "cobble_floor": {
+          "base_id": 1558,
+          "layer": 0,
+          "passable": true,
+          "note": "cobble_floor (tileset3 A5 발굴)"
+        },
+        "brick_floor_grey": {
+          "base_id": 1559,
+          "layer": 0,
+          "passable": true,
+          "note": "brick_floor_grey (tileset3 A5 발굴)"
+        },
+        "wood_wall_a": {
+          "base_id": 1560,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_a (tileset3 A5 발굴)"
+        },
+        "wood_wall_b": {
+          "base_id": 1561,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_b (tileset3 A5 발굴)"
+        },
+        "wood_floor_e": {
+          "base_id": 1562,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_e (tileset3 A5 발굴)"
+        },
+        "wood_floor_f": {
+          "base_id": 1563,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_f (tileset3 A5 발굴)"
+        },
+        "brick_floor_grey2": {
+          "base_id": 1564,
+          "layer": 0,
+          "passable": true,
+          "note": "brick_floor_grey2 (tileset3 A5 발굴)"
+        },
+        "brick_floor_tan": {
+          "base_id": 1565,
+          "layer": 0,
+          "passable": true,
+          "note": "brick_floor_tan (tileset3 A5 발굴)"
+        },
+        "brick_floor_cream": {
+          "base_id": 1566,
+          "layer": 0,
+          "passable": true,
+          "note": "brick_floor_cream (tileset3 A5 발굴)"
+        },
+        "stone_floor_dark": {
+          "base_id": 1567,
+          "layer": 0,
+          "passable": true,
+          "note": "stone_floor_dark (tileset3 A5 발굴)"
+        },
+        "wood_floor_stain": {
+          "base_id": 1568,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_stain (tileset3 A5 발굴)"
+        },
+        "wood_floor_stain2": {
+          "base_id": 1569,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_stain2 (tileset3 A5 발굴)"
+        },
+        "wood_floor_stain3": {
+          "base_id": 1570,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_stain3 (tileset3 A5 발굴)"
+        },
+        "wood_floor_stain4": {
+          "base_id": 1571,
+          "layer": 0,
+          "passable": true,
+          "note": "wood_floor_stain4 (tileset3 A5 발굴)"
+        },
+        "tile_grey2": {
+          "base_id": 1572,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_grey2 (tileset3 A5 발굴)"
+        },
+        "stone_tan": {
+          "base_id": 1573,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_tan (tileset3 A5 발굴)"
+        },
+        "stone_grey": {
+          "base_id": 1574,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_grey (tileset3 A5 발굴)"
+        },
+        "tile_pattern": {
+          "base_id": 1575,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_pattern (tileset3 A5 발굴)"
+        },
+        "tile_white": {
+          "base_id": 1576,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_white (tileset3 A5 발굴)"
+        },
+        "carpet_gold": {
+          "base_id": 1577,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_gold (tileset3 A5 발굴)"
+        },
+        "carpet_blue": {
+          "base_id": 1578,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_blue (tileset3 A5 발굴)"
+        },
+        "carpet_green": {
+          "base_id": 1579,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_green (tileset3 A5 발굴)"
+        },
+        "stone_circle": {
+          "base_id": 1580,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_circle (tileset3 A5 발굴)"
+        },
+        "tile_white_glossy": {
+          "base_id": 1581,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_white_glossy (tileset3 A5 발굴)"
+        },
+        "wall_maroon": {
+          "base_id": 1582,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_maroon (tileset3 A5 발굴)"
+        },
+        "stone_blocks": {
+          "base_id": 1583,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_blocks (tileset3 A5 발굴)"
+        },
+        "floor_white": {
+          "base_id": 1584,
+          "layer": 0,
+          "passable": true,
+          "note": "floor_white (tileset3 A5 발굴)"
+        },
+        "carpet_gold2": {
+          "base_id": 1585,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_gold2 (tileset3 A5 발굴)"
+        },
+        "carpet_blue2": {
+          "base_id": 1586,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_blue2 (tileset3 A5 발굴)"
+        },
+        "carpet_green2": {
+          "base_id": 1587,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_green2 (tileset3 A5 발굴)"
+        },
+        "stone_circle2": {
+          "base_id": 1588,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_circle2 (tileset3 A5 발굴)"
+        },
+        "panel_white": {
+          "base_id": 1589,
+          "layer": 0,
+          "passable": false,
+          "note": "panel_white (tileset3 A5 발굴)"
+        },
+        "wall_maroon2": {
+          "base_id": 1590,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_maroon2 (tileset3 A5 발굴)"
+        },
+        "wall_grey": {
+          "base_id": 1591,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_grey (tileset3 A5 발굴)"
+        },
+        "floor_white_crack": {
+          "base_id": 1592,
+          "layer": 0,
+          "passable": true,
+          "note": "floor_white_crack (tileset3 A5 발굴)"
+        },
+        "carpet_gold3": {
+          "base_id": 1593,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_gold3 (tileset3 A5 발굴)"
+        },
+        "carpet_blue3": {
+          "base_id": 1594,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_blue3 (tileset3 A5 발굴)"
+        },
+        "carpet_green3": {
+          "base_id": 1595,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_green3 (tileset3 A5 발굴)"
+        },
+        "stone_dark": {
+          "base_id": 1596,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_dark (tileset3 A5 발굴)"
+        },
+        "floor_white_crack2": {
+          "base_id": 1597,
+          "layer": 0,
+          "passable": true,
+          "note": "floor_white_crack2 (tileset3 A5 발굴)"
+        },
+        "wall_maroon_crack": {
+          "base_id": 1598,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_maroon_crack (tileset3 A5 발굴)"
+        },
+        "wall_grey2": {
+          "base_id": 1599,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_grey2 (tileset3 A5 발굴)"
+        },
+        "cobble_floor2": {
+          "base_id": 1600,
+          "layer": 0,
+          "passable": true,
+          "note": "cobble_floor2 (tileset3 A5 발굴)"
+        },
+        "sandstone_floor": {
+          "base_id": 1601,
+          "layer": 0,
+          "passable": true,
+          "note": "sandstone_floor (tileset3 A5 발굴)"
+        },
+        "plaster_cream": {
+          "base_id": 1602,
+          "layer": 0,
+          "passable": true,
+          "note": "plaster_cream (tileset3 A5 발굴)"
+        },
+        "carpet_pink": {
+          "base_id": 1603,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_pink (tileset3 A5 발굴)"
+        },
+        "carpet_green4": {
+          "base_id": 1604,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_green4 (tileset3 A5 발굴)"
+        },
+        "brick_red": {
+          "base_id": 1605,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_red (tileset3 A5 발굴)"
+        },
+        "tile_gold": {
+          "base_id": 1606,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_gold (tileset3 A5 발굴)"
+        },
+        "brick_blue": {
+          "base_id": 1607,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_blue (tileset3 A5 발굴)"
+        },
+        "cobble_moss": {
+          "base_id": 1608,
+          "layer": 0,
+          "passable": true,
+          "note": "cobble_moss (tileset3 A5 발굴)"
+        },
+        "wall_tan": {
+          "base_id": 1609,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_tan (tileset3 A5 발굴)"
+        },
+        "wall_cream": {
+          "base_id": 1610,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_cream (tileset3 A5 발굴)"
+        },
+        "carpet_pink2": {
+          "base_id": 1611,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_pink2 (tileset3 A5 발굴)"
+        },
+        "demon_door": {
+          "base_id": 1612,
+          "layer": 0,
+          "passable": false,
+          "note": "demon_door (tileset3 A5 발굴)"
+        },
+        "brick_red2": {
+          "base_id": 1613,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_red2 (tileset3 A5 발굴)"
+        },
+        "wall_gold": {
+          "base_id": 1614,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_gold (tileset3 A5 발굴)"
+        },
+        "brick_blue2": {
+          "base_id": 1615,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_blue2 (tileset3 A5 발굴)"
+        },
+        "cobble_crack": {
+          "base_id": 1616,
+          "layer": 0,
+          "passable": true,
+          "note": "cobble_crack (tileset3 A5 발굴)"
+        },
+        "stone_tan_crack": {
+          "base_id": 1617,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_tan_crack (tileset3 A5 발굴)"
+        },
+        "cream_crack": {
+          "base_id": 1618,
+          "layer": 0,
+          "passable": false,
+          "note": "cream_crack (tileset3 A5 발굴)"
+        },
+        "carpet_pink_crack": {
+          "base_id": 1619,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_pink_crack (tileset3 A5 발굴)"
+        },
+        "carpet_green_crack": {
+          "base_id": 1620,
+          "layer": 0,
+          "passable": true,
+          "note": "carpet_green_crack (tileset3 A5 발굴)"
+        },
+        "brick_red_crack": {
+          "base_id": 1621,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_red_crack (tileset3 A5 발굴)"
+        },
+        "wall_gold_crack": {
+          "base_id": 1622,
+          "layer": 0,
+          "passable": false,
+          "note": "wall_gold_crack (tileset3 A5 발굴)"
+        },
+        "brick_blue_crack": {
+          "base_id": 1623,
+          "layer": 0,
+          "passable": false,
+          "note": "brick_blue_crack (tileset3 A5 발굴)"
+        },
+        "wood_wall_c": {
+          "base_id": 1624,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_c (tileset3 A5 발굴)"
+        },
+        "wood_wall_d": {
+          "base_id": 1625,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_d (tileset3 A5 발굴)"
+        },
+        "wood_wall_e": {
+          "base_id": 1626,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_e (tileset3 A5 발굴)"
+        },
+        "wood_wall_f": {
+          "base_id": 1627,
+          "layer": 0,
+          "passable": false,
+          "note": "wood_wall_f (tileset3 A5 발굴)"
+        },
+        "metal_wall_a": {
+          "base_id": 1628,
+          "layer": 0,
+          "passable": false,
+          "note": "metal_wall_a (tileset3 A5 발굴)"
+        },
+        "metal_wall_b": {
+          "base_id": 1629,
+          "layer": 0,
+          "passable": false,
+          "note": "metal_wall_b (tileset3 A5 발굴)"
+        },
+        "metal_wall_c": {
+          "base_id": 1630,
+          "layer": 0,
+          "passable": false,
+          "note": "metal_wall_c (tileset3 A5 발굴)"
+        },
+        "metal_wall_d": {
+          "base_id": 1631,
+          "layer": 0,
+          "passable": false,
+          "note": "metal_wall_d (tileset3 A5 발굴)"
+        },
+        "stone_wall_k": {
+          "base_id": 1632,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_k (tileset3 A5 발굴)"
+        },
+        "stone_wall_l": {
+          "base_id": 1633,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_l (tileset3 A5 발굴)"
+        },
+        "stone_wall_m": {
+          "base_id": 1634,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_m (tileset3 A5 발굴)"
+        },
+        "stone_wall_n": {
+          "base_id": 1635,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_wall_n (tileset3 A5 발굴)"
+        },
+        "stone_crack_a": {
+          "base_id": 1636,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_crack_a (tileset3 A5 발굴)"
+        },
+        "stone_crack_b": {
+          "base_id": 1637,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_crack_b (tileset3 A5 발굴)"
+        },
+        "stone_crack_c": {
+          "base_id": 1638,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_crack_c (tileset3 A5 발굴)"
+        },
+        "stone_crack_d": {
+          "base_id": 1639,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_crack_d (tileset3 A5 발굴)"
+        },
+        "runner_red": {
+          "base_id": 1640,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_red (tileset3 A5 발굴)"
+        },
+        "runner_red2": {
+          "base_id": 1641,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_red2 (tileset3 A5 발굴)"
+        },
+        "runner_red3": {
+          "base_id": 1642,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_red3 (tileset3 A5 발굴)"
+        },
+        "runner_red4": {
+          "base_id": 1643,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_red4 (tileset3 A5 발굴)"
+        },
+        "runner_magenta": {
+          "base_id": 1644,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_magenta (tileset3 A5 발굴)"
+        },
+        "runner_magenta2": {
+          "base_id": 1645,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_magenta2 (tileset3 A5 발굴)"
+        },
+        "runner_magenta3": {
+          "base_id": 1646,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_magenta3 (tileset3 A5 발굴)"
+        },
+        "runner_magenta4": {
+          "base_id": 1647,
+          "layer": 0,
+          "passable": true,
+          "note": "runner_magenta4 (tileset3 A5 발굴)"
+        },
+        "relief_flower": {
+          "base_id": 1648,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_flower (tileset3 A5 발굴)"
+        },
+        "relief_vine": {
+          "base_id": 1649,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_vine (tileset3 A5 발굴)"
+        },
+        "relief_moss": {
+          "base_id": 1650,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_moss (tileset3 A5 발굴)"
+        },
+        "relief_stone": {
+          "base_id": 1651,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_stone (tileset3 A5 발굴)"
+        },
+        "emblem_moon": {
+          "base_id": 1652,
+          "layer": 0,
+          "passable": false,
+          "note": "emblem_moon (tileset3 A5 발굴)"
+        },
+        "emblem_pegasus": {
+          "base_id": 1653,
+          "layer": 0,
+          "passable": false,
+          "note": "emblem_pegasus (tileset3 A5 발굴)"
+        },
+        "emblem_sun": {
+          "base_id": 1654,
+          "layer": 0,
+          "passable": false,
+          "note": "emblem_sun (tileset3 A5 발굴)"
+        },
+        "emblem_phoenix": {
+          "base_id": 1655,
+          "layer": 0,
+          "passable": false,
+          "note": "emblem_phoenix (tileset3 A5 발굴)"
+        },
+        "relief_flower2": {
+          "base_id": 1656,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_flower2 (tileset3 A5 발굴)"
+        },
+        "relief_vine2": {
+          "base_id": 1657,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_vine2 (tileset3 A5 발굴)"
+        },
+        "relief_moss2": {
+          "base_id": 1658,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_moss2 (tileset3 A5 발굴)"
+        },
+        "relief_stone2": {
+          "base_id": 1659,
+          "layer": 0,
+          "passable": false,
+          "note": "relief_stone2 (tileset3 A5 발굴)"
+        },
+        "stone_crack_e": {
+          "base_id": 1660,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_crack_e (tileset3 A5 발굴)"
+        },
+        "stone_grey3": {
+          "base_id": 1661,
+          "layer": 0,
+          "passable": false,
+          "note": "stone_grey3 (tileset3 A5 발굴)"
+        },
+        "gold_crack": {
+          "base_id": 1662,
+          "layer": 0,
+          "passable": false,
+          "note": "gold_crack (tileset3 A5 발굴)"
+        },
+        "tile_gold2": {
+          "base_id": 1663,
+          "layer": 0,
+          "passable": true,
+          "note": "tile_gold2 (tileset3 A5 발굴)"
         }
       },
       "multitile": {
@@ -477,29 +3239,6 @@
             ]
           ],
           "note": "침대 1x2(세로)"
-        },
-        "bookshelf": {
-          "tiles": [
-            [
-              430,
-              431
-            ],
-            [
-              438,
-              439
-            ]
-          ],
-          "blocked": [
-            [
-              false,
-              false
-            ],
-            [
-              true,
-              true
-            ]
-          ],
-          "note": "책장 2x2(위=통과)"
         },
         "pillar": {
           "tiles": [
@@ -597,84 +3336,1084 @@
           "note": "스테인드글라스 창 1x2(세로). 벽면 장식 — 71→D→79 x46"
         },
         "bed_large": {
-          "tiles": [[169, 170], [177, 178]],
-          "blocked": [[true, true], [true, true]],
+          "tiles": [
+            [
+              169,
+              170
+            ],
+            [
+              177,
+              178
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 더블침대(나무프레임+베개2+주황줄무늬이불). 샘플맵 인접 169→R→170,169→D→177,177→R→178 로 확정."
         },
         "sofa": {
-          "tiles": [[96, 97, 98, 99, 100], [104, 105, 106, 107, 108]],
-          "blocked": [[true, true, true, true, true], [true, true, true, true, true]],
+          "tiles": [
+            [
+              96,
+              97,
+              98,
+              99,
+              100
+            ],
+            [
+              104,
+              105,
+              106,
+              107,
+              108
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true,
+              true,
+              true
+            ],
+            [
+              true,
+              true,
+              true,
+              true,
+              true
+            ]
+          ],
           "note": "5x2 화려한 빨강 소파. 렌더 검증."
         },
         "kitchen_counter": {
-          "tiles": [[200, 201, 202, 203]],
-          "blocked": [[true, true, true, true]],
+          "tiles": [
+            [
+              200,
+              201,
+              202,
+              203
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true,
+              true
+            ]
+          ],
           "note": "1x4 부엌 카운터(오븐+싱크대+조리대+찬장). 렌더 검증."
         },
         "cabinet": {
-          "tiles": [[136, 137], [144, 145]],
-          "blocked": [[true, true], [true, true]],
+          "tiles": [
+            [
+              136,
+              137
+            ],
+            [
+              144,
+              145
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 나무 찬장/캐비닛. 렌더 검증."
         },
         "clock": {
-          "tiles": [[117], [125]],
-          "blocked": [[true], [true]],
+          "tiles": [
+            [
+              117
+            ],
+            [
+              125
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
           "note": "1x2 괘종시계. 렌더 검증."
         },
         "window_wood": {
-          "tiles": [[64, 65], [72, 73]],
-          "blocked": [[true, true], [true, true]],
+          "tiles": [
+            [
+              64,
+              65
+            ],
+            [
+              72,
+              73
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 나무 창문(벽면). 렌더 검증."
         },
         "green_curtain": {
-          "tiles": [[66, 67], [74, 75]],
-          "blocked": [[true, true], [true, true]],
+          "tiles": [
+            [
+              66,
+              67
+            ],
+            [
+              74,
+              75
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 녹색 커튼 창문(벽면). 렌더 검증."
         },
         "door": {
-          "tiles": [[101, 102], [109, 110]],
-          "blocked": [[true, true], [false, false]],
+          "tiles": [
+            [
+              101,
+              102
+            ],
+            [
+              109,
+              110
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              false,
+              false
+            ]
+          ],
           "note": "2x2 문(아래 칸 통과 — 문지방). 렌더 검증."
         },
         "bookshelf2": {
-          "tiles": [[152, 153], [160, 161]],
-          "blocked": [[false, false], [true, true]],
+          "tiles": [
+            [
+              152,
+              153
+            ],
+            [
+              160,
+              161
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 책장(위=빈선반 통과, 아래=책 막힘). 렌더 검증."
         },
         "piano": {
-          "tiles": [[205, 206, 207], [213, 214, 215]],
-          "blocked": [[true, true, true], [true, true, true]],
+          "tiles": [
+            [
+              205,
+              206,
+              207
+            ],
+            [
+              213,
+              214,
+              215
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true
+            ],
+            [
+              true,
+              true,
+              true
+            ]
+          ],
           "note": "3x2 그랜드 피아노. 렌더 검증."
         },
         "organ": {
-          "tiles": [[222, 223], [230, 231]],
-          "blocked": [[true, true], [true, true]],
+          "tiles": [
+            [
+              222,
+              223
+            ],
+            [
+              230,
+              231
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x2 파이프오르간. 렌더 검증."
         },
         "marble_pillar": {
-          "tiles": [[24], [32], [40], [48]],
-          "blocked": [[false], [true], [true], [true]],
-          "note": "4x1 큰 대리석 기둥(맨위 통과). 렌더 검증."
+          "tiles": [
+            [
+              24
+            ],
+            [
+              32
+            ],
+            [
+              40
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "대리석 기둥 1x3(주두/몸통/받침). 48(커튼) 오포함 정정 — 렌더 검증."
         },
         "mirror": {
-          "tiles": [[118], [126]],
-          "blocked": [[true], [true]],
+          "tiles": [
+            [
+              118
+            ],
+            [
+              126
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
           "note": "1x2 금테 거울(벽면). 렌더 검증."
         },
         "dining_table": {
-          "tiles": [[123, 124]],
-          "blocked": [[true, true]],
+          "tiles": [
+            [
+              123,
+              124
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
           "note": "1x2 식탁(보라 식탁보+화분탁자, 큰 방 중앙용). 130~132는 액자라 제외(재검증)."
         },
         "painting_wide": {
-          "tiles": [[130, 131]],
-          "blocked": [[true, true]],
+          "tiles": [
+            [
+              130,
+              131
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
           "note": "2x1 풍경화 액자(가로, 벽면). 130→R→131 x25 검증."
         },
         "fireplace": {
-          "tiles": [[194, 195, 196]],
-          "blocked": [[true, true, true]],
+          "tiles": [
+            [
+              194,
+              195,
+              196
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true
+            ]
+          ],
           "note": "1x3 벽돌 벽난로. 렌더 검증."
+        },
+        "weapon_rack": {
+          "tiles": [
+            [
+              430,
+              431
+            ],
+            [
+              438,
+              439
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "무기 진열대 2x2(검·보석, 위=통과). 책장 오등록 정정 — 렌더 검증(진짜 책장=bookshelf2)."
+        },
+        "shutter_grey": {
+          "tiles": [
+            [
+              2,
+              3
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "shutter_grey (tileset3 시트B 발굴)"
+        },
+        "shutter_wood": {
+          "tiles": [
+            [
+              4,
+              5
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "shutter_wood (tileset3 시트B 발굴)"
+        },
+        "stone_niche": {
+          "tiles": [
+            [
+              9,
+              10
+            ],
+            [
+              17,
+              18
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "stone_niche (tileset3 시트B 발굴)"
+        },
+        "ladder_metal": {
+          "tiles": [
+            [
+              6
+            ],
+            [
+              14
+            ],
+            [
+              22
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "ladder_metal (tileset3 시트B 발굴)"
+        },
+        "ladder_wood": {
+          "tiles": [
+            [
+              13
+            ],
+            [
+              21
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "ladder_wood (tileset3 시트B 발굴)"
+        },
+        "white_curtain": {
+          "tiles": [
+            [
+              48
+            ],
+            [
+              56
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "white_curtain (tileset3 시트B 발굴)"
+        },
+        "red_curtain": {
+          "tiles": [
+            [
+              49,
+              50
+            ],
+            [
+              57,
+              58
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "red_curtain (tileset3 시트B 발굴)"
+        },
+        "red_curtain2": {
+          "tiles": [
+            [
+              51
+            ],
+            [
+              59
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "red_curtain2 (tileset3 시트B 발굴)"
+        },
+        "brown_curtain": {
+          "tiles": [
+            [
+              52,
+              53,
+              54,
+              55
+            ],
+            [
+              60,
+              61,
+              62,
+              63
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false,
+              false,
+              false
+            ],
+            [
+              false,
+              false,
+              false,
+              false
+            ]
+          ],
+          "note": "brown_curtain (tileset3 시트B 발굴)"
+        },
+        "magenta_curtain": {
+          "tiles": [
+            [
+              70
+            ],
+            [
+              78
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "magenta_curtain (tileset3 시트B 발굴)"
+        },
+        "marble_pillar2": {
+          "tiles": [
+            [
+              25
+            ],
+            [
+              33
+            ],
+            [
+              41
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "marble_pillar2 (tileset3 시트B 발굴)"
+        },
+        "tapestry_red2": {
+          "tiles": [
+            [
+              81
+            ],
+            [
+              89
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "tapestry_red2 (tileset3 시트B 발굴)"
+        },
+        "framed_mirror": {
+          "tiles": [
+            [
+              85
+            ],
+            [
+              93
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "framed_mirror (tileset3 시트B 발굴)"
+        },
+        "gothic_window": {
+          "tiles": [
+            [
+              103
+            ],
+            [
+              111
+            ]
+          ],
+          "blocked": [
+            [
+              false
+            ],
+            [
+              false
+            ]
+          ],
+          "note": "gothic_window (tileset3 시트B 발굴)"
+        },
+        "bench_wood": {
+          "tiles": [
+            [
+              112,
+              113
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "bench_wood (tileset3 시트B 발굴)"
+        },
+        "red_table": {
+          "tiles": [
+            [
+              115,
+              116
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "red_table (tileset3 시트B 발굴)"
+        },
+        "mirror_magenta": {
+          "tiles": [
+            [
+              119
+            ],
+            [
+              127
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "mirror_magenta (tileset3 시트B 발굴)"
+        },
+        "world_map": {
+          "tiles": [
+            [
+              128,
+              129
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "world_map (tileset3 시트B 발굴)"
+        },
+        "cabinet_b": {
+          "tiles": [
+            [
+              138,
+              139
+            ],
+            [
+              146,
+              147
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ],
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "cabinet_b (tileset3 시트B 발굴)"
+        },
+        "bed_blue_single": {
+          "tiles": [
+            [
+              168
+            ],
+            [
+              176
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "bed_blue_single (tileset3 시트B 발굴)"
+        },
+        "bed_brown": {
+          "tiles": [
+            [
+              172
+            ],
+            [
+              180
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "bed_brown (tileset3 시트B 발굴)"
+        },
+        "bed_dark": {
+          "tiles": [
+            [
+              173
+            ],
+            [
+              181
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "bed_dark (tileset3 시트B 발굴)"
+        },
+        "bed_occupied": {
+          "tiles": [
+            [
+              174
+            ],
+            [
+              182
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "bed_occupied (tileset3 시트B 발굴)"
+        },
+        "bed_post": {
+          "tiles": [
+            [
+              175
+            ],
+            [
+              183
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "bed_post (tileset3 시트B 발굴)"
+        },
+        "stone_fireplace": {
+          "tiles": [
+            [
+              189,
+              190,
+              191
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true
+            ]
+          ],
+          "note": "stone_fireplace (tileset3 시트B 발굴)"
+        },
+        "marble_fireplace": {
+          "tiles": [
+            [
+              197,
+              198,
+              199
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true
+            ]
+          ],
+          "note": "marble_fireplace (tileset3 시트B 발굴)"
+        },
+        "pillar_wood": {
+          "tiles": [
+            [
+              490
+            ],
+            [
+              498
+            ],
+            [
+              506
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "pillar_wood (tileset3 시트C 발굴)"
+        },
+        "pillar_stone": {
+          "tiles": [
+            [
+              492
+            ],
+            [
+              500
+            ],
+            [
+              508
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "pillar_stone (tileset3 시트C 발굴)"
+        },
+        "pillar_stone2": {
+          "tiles": [
+            [
+              493
+            ],
+            [
+              501
+            ],
+            [
+              509
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "pillar_stone2 (tileset3 시트C 발굴)"
+        },
+        "pillar_gold": {
+          "tiles": [
+            [
+              494
+            ],
+            [
+              502
+            ],
+            [
+              510
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "pillar_gold (tileset3 시트C 발굴)"
+        },
+        "pillar_gold2": {
+          "tiles": [
+            [
+              495
+            ],
+            [
+              503
+            ],
+            [
+              511
+            ]
+          ],
+          "blocked": [
+            [
+              true
+            ],
+            [
+              true
+            ],
+            [
+              true
+            ]
+          ],
+          "note": "pillar_gold2 (tileset3 시트C 발굴)"
+        },
+        "wood_railing": {
+          "tiles": [
+            [
+              480,
+              481
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true
+            ]
+          ],
+          "note": "wood_railing (tileset3 시트C 발굴)"
+        },
+        "stone_railing": {
+          "tiles": [
+            [
+              482,
+              483,
+              484,
+              485
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true,
+              true
+            ]
+          ],
+          "note": "stone_railing (tileset3 시트C 발굴)"
+        },
+        "throne": {
+          "tiles": [
+            [
+              448,
+              449,
+              450
+            ]
+          ],
+          "blocked": [
+            [
+              true,
+              true,
+              true
+            ]
+          ],
+          "note": "throne (tileset3 시트C 발굴)"
+        },
+        "monument": {
+          "tiles": [
+            [
+              478,
+              479
+            ],
+            [
+              486,
+              487
+            ]
+          ],
+          "blocked": [
+            [
+              false,
+              false
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "note": "monument (tileset3 시트C 발굴)"
         }
       }
     },

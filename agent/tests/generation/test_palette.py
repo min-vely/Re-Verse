@@ -106,14 +106,15 @@ def test_get_multitile():
 def test_tilesets_3to6_multitile():
     """tileset 3~6 멀티타일 식별 결과 회귀 방지 (크기·구성)."""
     assert pal.get_multitile(3, "bed")["tiles"] == [[171], [179]]
-    assert pal.get_multitile(3, "bookshelf")["tiles"] == [[430, 431], [438, 439]]
+    # 430,431,438,439 는 책장이 아니라 무기 진열대였음(렌더 검증 후 weapon_rack 으로 정정)
+    assert pal.get_multitile(3, "weapon_rack")["tiles"] == [[430, 431], [438, 439]]
     assert pal.get_multitile(3, "pillar")["tiles"] == [[444], [452]]
     assert pal.get_multitile(4, "ice_crystal")["tiles"] == [[261], [269], [277]]
     assert pal.get_multitile(5, "bench")["tiles"] == [[473, 473]]
     assert pal.get_multitile(5, "fence")["tiles"] == [[439, 439]]
     assert pal.get_multitile(6, "railing")["tiles"] == [[96, 98]]
     # blocked 그리드가 tiles 와 같은 모양인지
-    for tid, nm in [(3, "bed"), (3, "bookshelf"), (4, "ice_crystal"), (5, "bench")]:
+    for tid, nm in [(3, "bed"), (3, "weapon_rack"), (4, "ice_crystal"), (5, "bench")]:
         mt = pal.get_multitile(tid, nm)
         assert len(mt["blocked"]) == len(mt["tiles"])
         assert all(len(b) == len(t) for b, t in zip(mt["blocked"], mt["tiles"]))
