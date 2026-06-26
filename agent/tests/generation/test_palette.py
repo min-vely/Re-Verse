@@ -52,7 +52,10 @@ def test_tilesets_3to6_objects():
 
 
 def test_tileset2_core_terrain_values():
-    """검증으로 확정된 핵심 지형 base_id (회귀 방지)."""
+    """검증으로 확정된 핵심 지형 base_id (회귀 방지).
+
+    전수 발굴로 terrain 이 확장됨 — exact-equal 대신 핵심값 불변만 가드.
+    """
     expected = {
         "grass": 2816,
         "dirt": 3584,
@@ -64,12 +67,13 @@ def test_tileset2_core_terrain_values():
         "wall": 3488,
     }
     tmap = pal.terrain_map(2)
-    assert tmap == expected
+    for name, base_id in expected.items():
+        assert tmap.get(name) == base_id, f"핵심 지형 {name} base_id 변경됨"
 
 
 def test_tileset2_passability():
-    """통행 가능 지형은 바닥, 통행 불가는 water/wall 만."""
-    assert pal.impassable_ids(2) == {2048, 3488}
+    """핵심 통행성 (회귀 방지). 전수 발굴로 impassable 확장됨 — 핵심 불변만 가드."""
+    assert {2048, 3488} <= pal.impassable_ids(2)
     assert pal.get_terrain(2, "grass")["passable"] is True
     assert pal.get_terrain(2, "water")["passable"] is False
     assert pal.get_terrain(2, "wall")["layer"] == 1
