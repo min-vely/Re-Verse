@@ -91,6 +91,10 @@ storage/chroma_db/
 # 게임 백업 파일 전체 무시
 storage/games/**/backup/*.bak
 
+# mapgen palette/catalog 백업 스냅샷(pre_*/*.backup) 무시 — 로컬 롤백용, 커밋 제외
+agent/generation/mapgen/data/*.pre_*.json
+agent/generation/mapgen/data/*.backup.json
+
 # 게임 데이터 특정 파일 무시
 storage/games/*/data/*.json
 

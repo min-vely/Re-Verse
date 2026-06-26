@@ -117,6 +117,17 @@ def get_multitile(tileset_id: int, name: str) -> dict[str, Any] | None:
     return ts.get("multitile", {}).get(name)
 
 
+def multitile_names(tileset_id: int) -> list[str]:
+    """tileset_id 의 멀티타일 이름 목록(_로 시작하는 메타 키 제외).
+
+    POI·가구 등 멀티타일을 이름 prefix 로 골라 쓸 때(예: 거대 구조물 POI 풀) 사용한다.
+    """
+    ts = get_tileset(tileset_id)
+    if not ts:
+        return []
+    return [n for n in ts.get("multitile", {}) if not n.startswith("_")]
+
+
 def kind_of(tile_id: int) -> str:
     """tile_id 가 속한 타일셋 시트 종류(A1~A5/BCDE) 반환.
 

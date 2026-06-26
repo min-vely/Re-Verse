@@ -65,6 +65,11 @@ _BIOMES: dict[str, list[tuple[float, str]]] = {
     "wetland": [(0.50, "water"), (1.01, "grass")],
     # SF외곽 도시(tileset 5): 물 → 잔디공원 → 도로 → 포장 → 타일 (road/pavement 일부 A5)
     "city": [(0.25, "water"), (0.40, "grass"), (0.70, "road"), (0.86, "pavement"), (1.01, "tile")],
+    # 오버월드(tileset 1): 물(2048) → 잔디(2816). tileset1 은 물가(water-grass)와 내륙
+    # (grass_plain/forest/mountain) 이 서로 비호환 클러스터(grass↔grass_plain 인접 어색)라
+    # 물을 부드럽게 쓰려면 water-grass 조합만 가능하다(grassland 과 동일 구조). 평원의
+    # 다양성·랜드마크는 지형이 아니라 오브젝트(나무 군집·청록 패치·POI·흙길)로 채운다.
+    "world": [(0.35, "water"), (1.01, "grass")],
 }
 DEFAULT_BIOME = "grassland"
 
@@ -157,10 +162,19 @@ _BIOME_OBJECTS: dict[str, list[tuple[str, str, float]]] = {
         ("basket", "floor", 0.03),
         ("chair", "floor", 0.04),
     ],
-    # SF외곽(tileset 5): 도로·포장에 소화전
+    # SF외곽(tileset 5): 도로·포장에 소화전 + 잔디공원에 풀·억새·덤불·화분(도시 녹지).
+    # sf_plant 풀(136)/억새(141,142)/덤불(149,150)=자연 식생, 화분(144,145)=포장 위 소품.
+    # (sf_plant 의 자판기·집·가로등 류는 식생이 아니라 제외 — 이름으로 골라 씀)
     "city": [
         ("hydrant", "road", 0.012),
         ("hydrant", "pavement", 0.012),
+        ("sf_plant_136", "grass", 0.045),
+        ("sf_plant_141", "grass", 0.030),
+        ("sf_plant_142", "grass", 0.030),
+        ("sf_plant_149", "grass", 0.030),
+        ("sf_plant_150", "grass", 0.025),
+        ("sf_plant_144", "pavement", 0.012),
+        ("sf_plant_145", "pavement", 0.012),
     ],
     # SF내부(tileset 6): 흰 타일 바닥(tile_floor) 위에 기계·가구
     "sf_interior": [
@@ -178,6 +192,10 @@ _BIOME_MULTITILE: dict[str, list[tuple[str, str, float]]] = {
     "desert": [("tree", "grass", 0.040)],  # 오아시스 나무
     "snow": [("snow_tree", "snow", 0.050)],
     "wetland": [("tree", "grass", 0.045)],
+    # 오버월드(tileset 1): 잔디에 작은 오버월드 나무(2x1, star 통과)를 군집 배치 → 흩뿌려진
+    # 숲. world_tree(진초록)만 밑동까지 완결이라 사용(world_tree_lime 234/235 는 잎만이고
+    # 밑동이 없어 공중에 뜬 원처럼 보여 제외).
+    "world": [("world_tree", "grass", 0.075)],
     "dungeon": [("ice_crystal", "floor", 0.010)],
     # 벽쪽 배치(against_wall) — 다양한 가구를 낮은 밀도로 섞어 방마다 다르게.
     # organ(파이프오르간)은 교회용 + 철창살처럼 보여 일반 집엔 제외.
@@ -198,6 +216,63 @@ _BIOME_MULTITILE: dict[str, list[tuple[str, str, float]]] = {
     "sf_interior": [("railing", "tile_floor", 0.015)],
 }
 
+# 바이옴 → (대상 지형, 밀도, 허용 카테고리). 카탈로그(tile_catalog)에서 해당 카테고리의
+# 단일 오브젝트를 끌어와 배치 풀을 확장한다(opt-in rich). 허용 카테고리만 써서 부적절한
+# 자산(창문·간판·벽조각)이 들판/방에 흩어지지 않게 한다. 발굴 자산을 생성기가 실제로 쓰는 길.
+_BIOME_CATEGORIES: dict[str, tuple[str, float, tuple[str, ...]]] = {
+    "grassland": ("grass", 0.010, ("town_plant", "town_flora")),
+    "desert": ("sand", 0.008, ("town_flora",)),
+    "snow": ("snow", 0.008, ("town_snow",)),
+    "wetland": ("grass", 0.010, ("town_plant", "town_flora")),
+    "dungeon": ("floor", 0.010, (
+        "rock_grey", "boulder_grey", "boulder_tan", "crystal_blue", "crystal_purple",
+        "crystal_pink", "crystal_red", "crystal_cyan", "coral_pink", "bush_green",
+        "moss_clump", "skeleton", "ivy_green",
+    )),
+    "interior": ("floor", 0.010, (
+        "crate", "pottery", "shelf_wood", "barrel_wood", "sack", "jar_rope", "book_shelf",
+    )),
+    "sf_interior": ("tile_floor", 0.010, ("sf_labprop",)),
+    "city": ("pavement", 0.006, ("sf_gardenprop", "sf_plant")),
+}
+
+
+def _rich_specs(biome: str, tid: int) -> list[tuple[str, str, float]]:
+    """카탈로그 카테고리에서 바이옴에 어울리는 단일 오브젝트를 (이름,대상,밀도) 스펙으로 확장."""
+    cfg = _BIOME_CATEGORIES.get(biome)
+    if not cfg:
+        return []
+    target, density, cats = cfg
+    from agent.generation.mapgen import tile_catalog as tc
+
+    return [(o["name"], target, density) for o in tc.objects_in_categories(tid, cats)]
+
+
+# 바이옴 → (대상 지형 이름들, POI 이름 prefix들, 1만 칸당 목표 개수). POI 는 샘플맵에서
+# 추출한 거대 구조물(성·요새·산악·빌딩·분수…) 멀티타일이다. 나무·가구(_place_multitile)는
+# 확률-격자로 흩뿌리지만 POI 는 크고 드문 랜드마크라 개수 제한·간격 방식(_place_pois)으로 둔다.
+_BIOME_POI: dict[str, tuple[tuple[str, ...], tuple[str, ...], float]] = {
+    # 오버월드(tileset 1): 잔디평원에 성·군사요새·산악·우주선·탈것 랜드마크.
+    "world": (
+        ("grass", "dirt"),
+        ("world_mountain", "world_castle", "world_military", "world_scifi", "world_vehicle"),
+        7.0,
+    ),
+    # SF외곽 도시(tileset 5): 포장/잔디/도로 위에 빌딩·분수·노점·차량·산업설비.
+    "city": (
+        ("pavement", "grass", "road"),
+        (
+            "sf_building", "sf_fountain", "sf_plant", "sf_stall", "sf_vehicle",
+            "sf_industrial", "sf_shop", "sf_gardenprop",
+            "sf_road", "sf_counter",  # 거리 소품: 화단·벤치·가로등 / 노점 판매대
+            # 네온 풀은 가구·쇼윈도·파편이 섞여 단독배치에 적합한 것만 이름으로 선별
+            # (poi5=네온 글자 간판, poi8=차양 상품 매대). 나머지 neon 은 제외.
+            "sf_neon_poi5", "sf_neon_poi8",
+        ),
+        5.0,
+    ),
+}
+
 # 바이옴 → [(데코 이름, 대상 지형, 덮는 비율 0~1)]. ground_decor 의 A2 풀밭 텍스처를
 # 바닥(L0) 위 L1 에 노이즈 패치로 겹쳐 깐다. 샘플맵 L1 의 본체(긴풀 등). coverage 가
 # 클수록 넓게 덮는다. 같은 칸엔 먼저 깐 데코가 우선(겹침 방지).
@@ -206,7 +281,15 @@ _GROUND_DECOR: dict[str, list[tuple[str, str, float]]] = {
     "desert": [("dry_grass", "sand", 0.35), ("tall_grass", "grass", 0.55)],
     "snow": [("snow_patch", "snow", 0.30)],
     "wetland": [("tall_grass", "grass", 0.55), ("grass_dark", "grass", 0.25)],
+    # 오버월드(tileset 1): 잔디에 청록 잔디 텍스처 패치 → 평평한 단색 평원 다양화.
+    "world": [("grass_teal", "grass", 0.30)],
+    # SF외곽(tileset 5): 잔디공원에 덤불잔디·짙은잔디 텍스처 패치(도시 녹지에 변화).
+    "city": [("grass_bush", "grass", 0.30), ("grass_dark_o", "grass", 0.20)],
 }
+
+# 바이옴별 길 타일(_place_path). 미지정은 dirt. tileset1 의 dirt/brick 은 autotile 경계에
+# 절벽 그림자가 구워져 검게 뜨므로 world 는 평면 gravel 을 쓴다.
+_BIOME_PATH: dict[str, str] = {"world": "gravel"}
 
 
 def _value_noise(width: int, height: int, cells: int, seed: int):
@@ -571,8 +654,12 @@ def _place_objects(
     floor_targets: set[int] | None = None,
     avoid_cells: set[tuple[int, int]] | None = None,
     block_avoid: set[tuple[int, int]] | None = None,
+    rich: bool = False,
 ) -> None:
     """바이옴별 오브젝트(나무·풀·꽃 등)를 어울리는 지형 위(레이어1)에 확률 배치.
+
+    rich=True 면 _BIOME_CATEGORIES 의 허용 카테고리로 카탈로그에서 발굴 자산을 추가로
+    끌어와 다양성을 높인다(기본 False — 결정론적 회귀 보존).
 
     통행 불가 오브젝트(나무 등)는 레이어5도 막는다. 이미 레이어1이 찬 칸은 건너뛴다.
     wall_adjacent=True 면 상하좌우 중 하나가 통행 불가(벽·가구)인 칸에만 배치(실내 가구
@@ -580,7 +667,9 @@ def _place_objects(
     floor_targets 가 주어지면 spec 의 target 지형 대신 그 base_id 집합(여러 바닥 종류)을
     배치 대상으로 쓴다 — 집 모델처럼 방마다 바닥이 다를 때 모든 바닥에 가구가 놓이게.
     """
-    specs = _BIOME_OBJECTS.get(biome, [])
+    specs = list(_BIOME_OBJECTS.get(biome, []))
+    if rich:
+        specs += _rich_specs(biome, tid)
     if not specs:
         return
     terr_ids = _terr_ids(tid)
@@ -672,10 +761,13 @@ def _place_multitile(
         for y in range(height - mh + 1):
             for x in range(width - mw + 1):
                 fits = all(
-                    base_of(get_tile(data, x + dx, y + dy, width, height, 0)) in tgt_set
-                    and get_tile(data, x + dx, y + dy, width, height, layer) == 0
-                    and not (avoid_cells and (x + dx, y + dy) in avoid_cells)
-                    and not (block_avoid and blocked[dy][dx] and (x + dx, y + dy) in block_avoid)
+                    tiles[dy][dx] == 0  # POI 구멍(빈칸)은 조건 면제
+                    or (
+                        base_of(get_tile(data, x + dx, y + dy, width, height, 0)) in tgt_set
+                        and get_tile(data, x + dx, y + dy, width, height, layer) == 0
+                        and not (avoid_cells and (x + dx, y + dy) in avoid_cells)
+                        and not (block_avoid and blocked[dy][dx] and (x + dx, y + dy) in block_avoid)
+                    )
                     for dy in range(mh)
                     for dx in range(mw)
                 )
@@ -695,10 +787,93 @@ def _place_multitile(
                     continue
                 for dy in range(mh):
                     for dx in range(mw):
+                        if tiles[dy][dx] == 0:
+                            continue  # POI 구멍은 배치 안 함(빈칸 보존)
                         set_tile(data, x + dx, y + dy, width, height, layer, int(tiles[dy][dx]))
                         placed_cells.append((x + dx, y + dy))
                         if blocked[dy][dx]:
                             set_tile(data, x + dx, y + dy, width, height, 5, 1)
+    return placed_cells
+
+
+def _place_pois(
+    data: list[int],
+    width: int,
+    height: int,
+    tid: int,
+    biome: str,
+    rng: random.Random,
+    layer: int = 1,
+    block_avoid: set[tuple[int, int]] | None = None,
+) -> list[tuple[int, int]]:
+    """거대 구조물 POI(랜드마크)를 대상 지형 위에 '개수 제한·간격' 방식으로 배치.
+
+    나무·가구(_place_multitile)는 확률-격자로 흩뿌리지만, POI 는 크고 드문 랜드마크라
+    맵 넓이에 비례한 목표 개수만큼만 두고 서로 1칸 이상 떨어뜨린다(겹침·밀집 방지).
+    매 시도마다 풀에서 무작위 POI 를 골라 위치를 잡아 종류가 다양하게 섞이게 한다.
+    POI 구멍(tiles==0)은 배치하지 않아 아래 지형이 비친다(_place_multitile 와 동일 규칙).
+    반환: 배치된 footprint 좌표(구멍 제외) — 호출 측이 그 위에 나무·오브젝트를 안 얹게 회피용.
+    """
+    cfg = _BIOME_POI.get(biome)
+    if not cfg:
+        return []
+    target_names, prefixes, per_10k = cfg
+    names = [n for n in pal.multitile_names(tid) if n.startswith(tuple(prefixes))]
+    if not names:
+        return []
+    terr_ids = _terr_ids(tid)
+    tgt_set: set[int] = set()
+    for tn in target_names:
+        base = terr_ids.get(tn)
+        if base is not None:
+            tgt_set |= _variant_set(tid, base)  # 변형 바닥도 대상
+    if not tgt_set:
+        return []
+
+    target_count = max(1, round(width * height / 10000 * per_10k))
+    placed_cells: list[tuple[int, int]] = []
+    boxes: list[tuple[int, int, int, int]] = []  # 배치된 POI bbox (간격 검사용)
+    max_attempts = target_count * 80 + 200
+    for _ in range(max_attempts):
+        if len(boxes) >= target_count:
+            break
+        mt = pal.get_multitile(tid, names[rng.randrange(len(names))])
+        if not mt:
+            continue
+        tiles, blocked = mt["tiles"], mt["blocked"]
+        mh, mw = len(tiles), len(tiles[0])
+        if mw > width or mh > height:
+            continue
+        x, y = rng.randrange(width - mw + 1), rng.randrange(height - mh + 1)
+        # 간격: 기존 POI bbox 와 x·y 양쪽에서 겹치면(1칸 여백 포함) 기각
+        too_close = any(
+            not ((x + mw - 1 < bx0 - 1 or x > bx1 + 1) or (y + mh - 1 < by0 - 1 or y > by1 + 1))
+            for bx0, by0, bx1, by1 in boxes
+        )
+        if too_close:
+            continue
+        # 적합성: 구멍 외 모든 칸이 대상 지형 + 해당 layer 비어있음 (+ 막힘칸은 통로 회피)
+        fits = all(
+            tiles[dy][dx] == 0
+            or (
+                base_of(get_tile(data, x + dx, y + dy, width, height, 0)) in tgt_set
+                and get_tile(data, x + dx, y + dy, width, height, layer) == 0
+                and not (block_avoid and blocked[dy][dx] and (x + dx, y + dy) in block_avoid)
+            )
+            for dy in range(mh)
+            for dx in range(mw)
+        )
+        if not fits:
+            continue
+        for dy in range(mh):
+            for dx in range(mw):
+                if tiles[dy][dx] == 0:
+                    continue  # POI 구멍은 배치 안 함(빈칸 보존)
+                set_tile(data, x + dx, y + dy, width, height, layer, int(tiles[dy][dx]))
+                placed_cells.append((x + dx, y + dy))
+                if blocked[dy][dx]:
+                    set_tile(data, x + dx, y + dy, width, height, 5, 1)
+        boxes.append((x, y, x + mw - 1, y + mh - 1))
     return placed_cells
 
 
@@ -746,16 +921,24 @@ def _place_ground_decor(
         apply_autotile(data, width, height, layer=1, oob_connected=False)
 
 
-def _place_path(data: list[int], width: int, height: int, tid: int, seed: int) -> None:
+def _place_path(
+    data: list[int], width: int, height: int, tid: int, seed: int, path_name: str = "dirt"
+) -> None:
     """맵을 가로지르는 구불구불한 흙길을 grass 바닥(L0) 위에 깐다(바닥 다양화).
 
     저주파 노이즈로 y 를 변위시켜 자연스러운 곡선 길을 만든다. grass 위에만 깔아
     물·모래·눈은 건드리지 않는다. autotile 전에 호출해 흙길 가장자리 shape 가 보정되게
     한다(dirt 는 grass 와 오토타일이 완전 호환은 아니지만 길이 좁아 경계가 거의 안 띈다).
     """
-    grass = pal.get_tile_id(tid, "grass")
-    dirt = pal.get_tile_id(tid, "dirt")
-    if not grass or not dirt:
+    # 주 잔디 지형들(grass·grass_plain) 위에 path_name 길을 깐다. 바이옴마다 주 잔디 이름이
+    # 다르므로(grassland=grass, world=grass_plain) 둘 다 대상으로 본다. terrain 직접
+    # 조회(없는 이름은 건너뜀 — get_tile_id 의 경고 로그 회피).
+    # 길 타일은 바이옴별로 다르다(_BIOME_PATH): tileset1 의 dirt/brick 은 autotile 시
+    # 위쪽에 절벽 그림자가 구워져 경계가 검게 떠 gravel(평면)을 쓴다.
+    terr = _terr_ids(tid)
+    dirt = terr.get(path_name)
+    grass_bases = {terr[n] for n in ("grass", "grass_plain") if n in terr}
+    if not grass_bases or not dirt:
         return
     nz = _value_noise(width, height, cells=max(2, width // 8), seed=seed)
     cy = height // 2
@@ -763,7 +946,7 @@ def _place_path(data: list[int], width: int, height: int, tid: int, seed: int) -
         yy = int(cy + (float(nz[0, x]) - 0.5) * height * 0.5)
         for dy in (0, 1):  # 길 폭 2칸
             y = yy + dy
-            if 0 <= y < height and base_of(get_tile(data, x, y, width, height, 0)) == grass:
+            if 0 <= y < height and base_of(get_tile(data, x, y, width, height, 0)) in grass_bases:
                 set_tile(data, x, y, width, height, 0, dirt)
 
 
@@ -975,6 +1158,7 @@ def generate_terrain_map(
     autotile: bool = True,
     biome: str = DEFAULT_BIOME,
     objects: bool = True,
+    rich_objects: bool = False,
     variants: bool = True,
     variant_regions: int = 1,
     paths: bool = True,
@@ -1044,7 +1228,7 @@ def generate_terrain_map(
             set_tile(data, x, y, w, h, 0, tile)
 
     if paths:  # autotile 전에 — 흙길 가장자리 shape 가 보정되도록
-        _place_path(data, w, h, tid, s + 71)
+        _place_path(data, w, h, tid, s + 71, path_name=_BIOME_PATH.get(biome, "dirt"))
     if autotile:
         apply_autotile(data, w, h, layer=0, oob_connected=True)
     # 바이옴 물(2240 등 palette 외 id 포함)도 통행 불가로 보장
@@ -1056,10 +1240,18 @@ def generate_terrain_map(
         # L1 풀밭 텍스처(샘플맵 L1 본체) → L3 나무 군집 → L2/L3 단일 식생 순.
         # 막힘 오브젝트(나무·바위)는 관절점(통로)을 막지 않도록 _blocking_avoid 회피.
         _place_ground_decor(data, w, h, tid, biome, s + 5, autotile=autotile)
-        ba = _blocking_avoid(data, w, h)  # 나무 배치 전 통로(관절점) 계산
-        _place_multitile(data, w, h, tid, biome, rng, layer=3, cluster_seed=s + 41, block_avoid=ba)
+        ba = _blocking_avoid(data, w, h)  # POI·나무 배치 전 통로(관절점) 계산
+        # 거대 구조물 POI(랜드마크)를 먼저 L1 에 둔다. footprint 를 avoid 로 넘겨 그 위에
+        # 나무·단일 오브젝트가 얹히지 않게 한다(POI 가 없는 바이옴은 빈 set — 무영향).
+        poi_cells = set(_place_pois(data, w, h, tid, biome, rng, layer=1, block_avoid=ba))
+        _place_multitile(
+            data, w, h, tid, biome, rng, layer=3, cluster_seed=s + 41,
+            block_avoid=ba, avoid_cells=poi_cells,
+        )
         ba = _blocking_avoid(data, w, h)  # 나무 반영 후 재계산
-        _place_objects(data, w, h, tid, biome, rng, block_avoid=ba)  # 단일 식생(막힘은 통로 회피)
+        _place_objects(
+            data, w, h, tid, biome, rng, block_avoid=ba, rich=rich_objects, avoid_cells=poi_cells,
+        )  # 단일 식생
     return data
 
 
@@ -1114,6 +1306,7 @@ def generate_dungeon_map(
     dims: MapDims,
     seed: int = 0,
     objects: bool = True,
+    rich_objects: bool = False,
     variants: bool = True,
     theme: str = "dungeon",
 ) -> list[int]:
@@ -1180,7 +1373,7 @@ def generate_dungeon_map(
         ba = _blocking_avoid(data, w, h)
         _place_multitile(data, w, h, 4, biome, rng, block_avoid=ba)
         ba = _blocking_avoid(data, w, h)
-        _place_objects(data, w, h, 4, biome, rng, block_avoid=ba)
+        _place_objects(data, w, h, 4, biome, rng, block_avoid=ba, rich=rich_objects)
     return data
 
 
@@ -1229,6 +1422,7 @@ def generate_house_map(
     dims: MapDims,
     seed: int = 0,
     objects: bool = True,
+    rich_objects: bool = False,
     tileset: int = 3,
     biome: str = "interior",
     floor_name: str = "floor",
@@ -1349,7 +1543,7 @@ def generate_house_map(
         ba = _blocking_avoid(data, w, h)
         _place_objects(
             data, w, h, tileset, biome, orng, wall_adjacent=True, floor_targets=ft,
-            avoid_cells=avoid, block_avoid=ba,
+            avoid_cells=avoid, block_avoid=ba, rich=rich_objects,
         )  # 단일 가구 벽 따라
         _place_on_furniture(data, w, h, tileset, orng)  # 침대 위 곰인형·책장 위 책
     # 분리된 영역(문 막힘·가구 막힘·고립 방)을 벽 1칸 뚫어 연결 — 모든 방 도달 보장.
@@ -1374,6 +1568,7 @@ def generate_interior_map(
     dims: MapDims,
     seed: int = 0,
     objects: bool = True,
+    rich_objects: bool = False,
     tileset: int = 3,
     biome: str = "interior",
     floor_name: str = "floor",
@@ -1448,7 +1643,7 @@ def generate_interior_map(
     if objects:
         rng = random.Random(s + 99)
         _place_multitile(data, w, h, tileset, biome, rng, against_wall=True)  # 가구 벽에 등 댐
-        _place_objects(data, w, h, tileset, biome, rng)
+        _place_objects(data, w, h, tileset, biome, rng, rich=rich_objects)
     _place_wall_shadows(data, w, h, {wall, wall_top})  # 그림자는 벽에만(가구 제외)
     return data
 
@@ -1597,7 +1792,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--mode",
         choices=[
-            "town", "terrain", "dungeon",
+            "town", "terrain", "world", "dungeon",
             "lava_dungeon", "ice_dungeon", "poison_dungeon",
             "sand_dungeon", "crystal_dungeon", "moss_dungeon", "dark_dungeon",
             "interior", "sf_outside", "sf_interior",
@@ -1639,6 +1834,7 @@ def main(argv: list[str] | None = None) -> None:
     _dungeon_modes = {"dungeon": "dungeon", **{f"{t}_dungeon": t for t in _DUNGEON_THEMES}}
     _MODE_TILESET = {
         **{m: 4 for m in _dungeon_modes}, "interior": 3, "sf_outside": 5, "sf_interior": 6,
+        "world": 1,
     }
     if args.mode in _MODE_TILESET:
         args.tileset = _MODE_TILESET[args.mode]  # 모드별 tileset 고정 (렌더도 동일)
@@ -1683,6 +1879,17 @@ def main(argv: list[str] | None = None) -> None:
             variant_regions=args.variant_regions,
         )
         mode_label = "sf_outside/city"
+    elif args.mode == "world":
+        data = generate_terrain_map(
+            dims,
+            seed=args.seed,
+            autotile=not args.no_autotile,
+            biome="world",
+            objects=not args.no_objects,
+            variants=not args.no_variants,
+            variant_regions=args.variant_regions,
+        )
+        mode_label = "world/overworld"
     elif args.mode == "terrain":
         data = generate_terrain_map(
             dims,

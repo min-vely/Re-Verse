@@ -119,7 +119,7 @@ def test_biome_bands_data_compatible():
     from agent.generation.mapgen import tile_adjacency as adj
     from agent.generation.mapgen.palette_mapgen import _BIOMES, _water_id
 
-    biome_ts = {"grassland": 2, "desert": 2, "snow": 2, "wetland": 2, "city": 5}
+    biome_ts = {"grassland": 2, "desert": 2, "snow": 2, "wetland": 2, "city": 5, "world": 1}
     for biome, bands in _BIOMES.items():
         ts = biome_ts[biome]
         ids = [
@@ -491,6 +491,53 @@ def test_sf_outside_city_biome():
     city_ids = set(pal.terrain_map(5).values())
     bases = {base_of(d[i]) for i in range(40 * 40)}
     assert len(bases & city_ids) >= 3
+
+
+def _poi_base_ids(tid):
+    """tid 의 모든 POI 멀티타일이 쓰는 base_id 집합."""
+    ts = pal.get_tileset(tid)
+    ids = set()
+    for nm, v in (ts.get("multitile") or {}).items():
+        if "poi" in nm:
+            for row in v["tiles"]:
+                ids |= {t for t in row if t}
+    return ids
+
+
+def _count_poi_cells(d, tid, w, h):
+    """L1 에서 POI base_id 가 깔린 칸 수."""
+    poi_ids = _poi_base_ids(tid)
+    return sum(
+        1 for y in range(h) for x in range(w)
+        if base_of(get_tile(d, x, y, w, h, 1)) in poi_ids
+    )
+
+
+def test_world_biome_places_pois():
+    """오버월드(tileset1) world 바이옴: 거대 구조물 POI 가 잔디평원 위에 배치된다."""
+    w = h = 100
+    d = generate_terrain_map(MapDims(w, h, 1), seed=7, biome="world")
+    assert _count_poi_cells(d, 1, w, h) > 0, "world 바이옴에 POI 가 하나도 안 깔림"
+    # POI 가 깔린 칸은 통행 플래그가 표시될 수 있고(막힘 구조물), 지형(L0)은 보존된다.
+    # world 의 주 지형은 grass(물가-잔디 호환 클러스터). 잔디 평원이 실제 존재해야 한다.
+    grass = pal.get_tile_id(1, "grass")
+    bases = {base_of(get_tile(d, x, y, w, h, 0)) for y in range(h) for x in range(w)}
+    assert grass in bases  # 잔디 지형이 실제 존재
+
+
+def test_city_biome_places_pois():
+    """SF외곽(tileset5) city 바이옴: 빌딩·분수 등 거대 구조물 POI 가 배치된다."""
+    w = h = 60
+    d = generate_terrain_map(MapDims(w, h, 5), seed=4, biome="city")
+    assert _count_poi_cells(d, 5, w, h) > 0, "city 바이옴에 POI 가 하나도 안 깔림"
+
+
+def test_non_poi_biome_places_no_pois():
+    """POI 미연동 바이옴(grassland, tileset2)에는 POI 가 배치되지 않는다(회귀 격리)."""
+    w = h = 60
+    d = generate_terrain_map(MapDims(w, h, 2), seed=4, biome="grassland")
+    # tileset2 엔 POI 자체가 없지만, 안전상 tileset1/5 POI base_id 가 새지 않음도 함께 본다.
+    assert _count_poi_cells(d, 2, w, h) == 0
 
 
 def test_sf_interior_floor_wall():

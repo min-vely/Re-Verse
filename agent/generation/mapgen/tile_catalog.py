@@ -25,6 +25,38 @@ def load_catalog() -> dict[str, Any]:
     return json.loads(_CATALOG_PATH.read_text(encoding="utf-8"))
 
 
+def objects_in_categories(
+    tileset_id: int,
+    categories: tuple[str, ...] | list[str],
+) -> list[dict[str, Any]]:
+    """카탈로그에서 주어진 카테고리의 '이름 있는' 단일 오브젝트 목록(배치 풀 확장용).
+
+    멀티타일 구성타일(name 없음)·오토타일(kind A1~A4)은 제외. 각 항목은 palette 와
+    연결되는 name 을 가져 pal.get_object 로 바로 배치 가능.
+    반환 항목: {name, base_id, category, passable, layer}.
+    """
+    cat = load_catalog()
+    ts = cat.get("tilesets", {}).get(str(tileset_id), {})
+    want = set(categories)
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for e in ts.get("tiles", []):
+        name = e.get("name")
+        if not name or name in seen or e.get("category") not in want:
+            continue
+        kind = str(e.get("kind", ""))
+        if kind.startswith("A") and kind != "A5":
+            continue  # 오토타일(지형) 제외, A5 단일은 허용
+        layers = e.get("layers") or {}
+        layer = int(max(layers, key=layers.get)) if layers else 1
+        seen.add(name)
+        out.append({
+            "name": name, "base_id": e["base_id"], "category": e["category"],
+            "passable": e.get("passable"), "layer": layer or 1,
+        })
+    return out
+
+
 def color_group(rgb: tuple[int, int, int] | list[int]) -> str:
     """평균 RGB → 색군 이름 (HSV 기반).
 

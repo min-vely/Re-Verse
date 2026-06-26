@@ -14,6 +14,7 @@
 import argparse
 import json
 import logging
+import re
 import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -153,6 +154,101 @@ def build_catalog(base_game: Path) -> dict:
             )
         catalog["tilesets"][str(tid)] = {"count": len(entries), "tiles": entries}
         logger.info("tileset %d: %d개 타일 카탈로그", tid, len(entries))
+    enrich_with_palette(catalog, base_game, recompute_missing=False)  # palette 의미정보 결합
+    return catalog
+
+
+# 타일셋 → 바이옴 친화 태그 (생성기 biome 연동의 기준)
+_TS_BIOME = {
+    1: ["world"],
+    2: ["grassland", "desert", "snow", "wetland", "town"],
+    3: ["interior"],
+    4: ["dungeon", "lava", "ice", "poison", "sand", "crystal", "moss", "dark"],
+    5: ["city", "sf_outdoor"],
+    6: ["sf_interior"],
+}
+
+
+def _category(name: str) -> str:
+    """palette 이름에서 의미 카테고리 도출(끝의 변형/번호 접미 제거)."""
+    c = re.sub(r"_\d+$", "", name)   # _320 같은 id 접미
+    c = re.sub(r"_[a-z]$", "", c)    # _a/_b 변형 접미
+    c = re.sub(r"\d+$", "", c)       # grass2 → grass
+    return c or name
+
+
+def _palette_index(tid: int, palette: dict):
+    """tid의 base_id→[이름들], 멀티타일 member base_id→[멀티이름], 멀티 footprint."""
+    t = palette["tilesets"].get(str(tid), {})
+    names: dict[int, list[str]] = {}
+    for sec in ("terrain", "objects"):
+        for k, v in (t.get(sec) or {}).items():
+            if isinstance(v, dict) and "base_id" in v:
+                names.setdefault(int(v["base_id"]), []).append(k)
+    mt_member: dict[int, list[str]] = {}
+    mt_info: dict[str, dict] = {}
+    for k, v in (t.get("multitile") or {}).items():
+        if isinstance(v, dict) and "tiles" in v:
+            mt_info[k] = {"rows": len(v["tiles"]), "cols": max(len(r) for r in v["tiles"])}
+            for r in v["tiles"]:
+                for x in r:
+                    mt_member.setdefault(int(x), []).append(k)
+    return names, mt_member, mt_info
+
+
+def enrich_with_palette(catalog: dict, base_game: Path, recompute_missing: bool = True) -> dict:
+    """catalog 타일에 palette 의미정보(name/category/multitile/biome) 결합 + 누락 타일 보강.
+
+    기존 rgb/count/layers/passable 은 보존(재계산 안 함). 타일셋별 categories 역색인 추가.
+    """
+    palette = json.loads(
+        (Path(__file__).parent / "data" / "tile_palette.json").read_text(encoding="utf-8")
+    )
+    tilesets_json = json.loads((base_game / "data" / "Tilesets.json").read_text(encoding="utf-8"))
+    flags = {
+        ts["id"]: ts["flags"]
+        for ts in tilesets_json
+        if isinstance(ts, dict) and "id" in ts and "flags" in ts
+    }
+    tmp = Path(tempfile.gettempdir())
+    for tid in range(1, 7):
+        names, mt_member, mt_info = _palette_index(tid, palette)
+        tcat = catalog["tilesets"].setdefault(str(tid), {"count": 0, "tiles": []})
+        by_id = {e["base_id"]: e for e in tcat["tiles"]}
+        f = flags.get(tid, [])
+        # palette 엔 있으나 catalog 에 없는 타일 보강
+        for bid in sorted((set(names) | set(mt_member)) - set(by_id)):
+            avg = _avg_color(bid, tid, base_game, tmp) if recompute_missing else (0, 0, 0)
+            e = {
+                "base_id": bid,
+                "kind": kind_of(bid),
+                "passable": (f[bid] & 0x0F) == 0 if bid < len(f) else None,
+                "star": bool(f[bid] & 0x10) if bid < len(f) else False,
+                "damage": bool(f[bid] & 0x100) if bid < len(f) else False,
+                "rgb": list(avg),
+                "count": 0,
+                "layers": {},
+            }
+            tcat["tiles"].append(e)
+            by_id[bid] = e
+        # 의미필드 부여 + 카테고리 역색인
+        biome = _TS_BIOME.get(tid, [])
+        cat_index: dict[str, list[int]] = defaultdict(list)
+        for e in tcat["tiles"]:
+            nms = names.get(e["base_id"], [])
+            e["name"] = nms[0] if nms else None
+            if len(nms) > 1:
+                e["aliases"] = nms[1:]
+            e["category"] = _category(nms[0]) if nms else None
+            e["multitile"] = mt_member.get(e["base_id"], [])
+            e["biome"] = biome
+            if e["category"]:
+                cat_index[e["category"]].append(e["base_id"])
+        tcat["tiles"].sort(key=lambda e: e["base_id"])
+        tcat["count"] = len(tcat["tiles"])
+        tcat["categories"] = {c: sorted(set(ids)) for c, ids in sorted(cat_index.items())}
+        tcat["multitiles"] = mt_info
+    catalog["schema_version"] = 2
     return catalog
 
 
@@ -160,13 +256,19 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="타일 전수 카탈로그 빌더")
     parser.add_argument("--base-game", type=Path, default=_DEFAULT_BASE)
     parser.add_argument("--out", type=Path, default=_OUT_PATH)
+    parser.add_argument("--enrich-only", action="store_true",
+                        help="rgb 재계산 없이 기존 카탈로그에 palette 의미정보만 결합")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     if not (args.base_game / "data" / "Tilesets.json").exists():
         parser.error(f"데이터 없음: {args.base_game} (storage/games/base_game 복원 필요)")
 
-    catalog = build_catalog(args.base_game)
+    if args.enrich_only:
+        catalog = json.loads(args.out.read_text(encoding="utf-8"))
+        catalog = enrich_with_palette(catalog, args.base_game)
+    else:
+        catalog = build_catalog(args.base_game)
     args.out.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     total = sum(t["count"] for t in catalog["tilesets"].values())
     print(f"저장: {args.out} (총 {total}개 타일, {len(catalog['tilesets'])}개 타일셋)")
