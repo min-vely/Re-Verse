@@ -106,6 +106,69 @@ def _tree_border(
                 place(x, y)
 
 
+def _plaza_pad(
+    data: list[int], W: int, H: int, box: tuple[int, int, int, int], pid: int, pad: int = 1
+) -> None:
+    """건물 footprint bbox 를 pad 칸 넓혀 그 안 바닥(L0)을 포장재로 채운다.
+
+    오토타일 **전에** 호출해야 잔디↔포장 가장자리가 자연스럽게 구워지고, 이후 집이 그 위에
+    스탬프되어 건물 주변만 '포장된 마당'으로 남는다(맨잔디 위에 뜬 느낌 제거 — 샘플맵의
+    '개발된 구역' 텍스처). 오목한 코너·처마 밑도 포장이 메워 실루엣이 또렷해진다.
+    """
+    if not pid:
+        return
+    x0, y0, x1, y1 = box
+    for y in range(max(0, y0 - pad), min(H, y1 + pad + 1)):
+        for x in range(max(0, x0 - pad), min(W, x1 + pad + 1)):
+            set_tile(data, x, y, W, H, 0, pid)
+
+
+def _frame_buildings(
+    data: list[int],
+    W: int,
+    H: int,
+    tid: int,
+    boxes: list[tuple[int, int, int, int]],
+    occupied: set[tuple[int, int]],
+    rng: random.Random,
+    radius: int = 3,
+) -> None:
+    """각 건물 포장마당 바깥의 잔디 링에 관목·꽃·풀을 흩어 건물을 초목으로 감싼다.
+
+    포장 pad(bbox+1) 은 건너뛰고 그 바깥 band(bbox+2..bbox+radius) 의 잔디 칸에만 배치 →
+    건물→포장마당→초목 프레이밍(샘플맵처럼 건물이 환경에 녹아든다). 건물 사이 맨잔디 공백도
+    함께 줄인다. 이미 점유된 칸(집·길·정원·나무)·비잔디 칸은 건너뛴다.
+    """
+    grass = pal.get_tile_id(tid, "grass")
+    pool = [
+        (pal.get_object(tid, n), d)
+        for n, d in (
+            ("bush_clump", 0.30),
+            ("shrub", 0.22),
+            ("grass_tuft", 0.28),
+            ("flower", 0.18),
+            ("berry_bush", 0.12),
+        )
+    ]
+    pool = [(o, d) for o, d in pool if o]
+    if not pool:
+        return
+    for x0, y0, x1, y1 in boxes:
+        for y in range(max(0, y0 - radius), min(H, y1 + radius + 1)):
+            for x in range(max(0, x0 - radius), min(W, x1 + radius + 1)):
+                if x0 - 1 <= x <= x1 + 1 and y0 - 1 <= y <= y1 + 1:
+                    continue  # 포장 pad 안은 건너뜀 — 바깥 잔디 링만 감싼다
+                if (x, y) in occupied or get_tile(data, x, y, W, H, 1) != 0:
+                    continue
+                if base_of(get_tile(data, x, y, W, H, 0)) != grass:
+                    continue
+                for obj, dens in pool:
+                    if rng.random() < dens:
+                        set_tile(data, x, y, W, H, int(obj.get("layer", 1)), int(obj["base_id"]))
+                        occupied.add((x, y))
+                        break
+
+
 def _plant_gardens(
     data: list[int],
     W: int,
@@ -166,6 +229,8 @@ def compile_blueprint(
             for dy in (0, 1):
                 set_tile(data, x, sy + dy, W, H, 0, pid)
     house_masks: list[tuple[Vignette, int, int, set]] = []
+    boxes: list[tuple[int, int, int, int]] = []  # 건물 footprint bbox(플라자·프레이밍용)
+    do_plaza = blueprint.get("plaza", True)
     for h in houses:
         vig = vignettes.get(h["vignette"])
         if not vig:
@@ -173,6 +238,14 @@ def compile_blueprint(
         hx, hy = h["x"], h["y"]
         mask = vig.structural_mask()
         house_masks.append((vig, hx, hy, mask))
+        # footprint bbox(대상 좌표) — 플라자 pad(오토타일 전)·프레이밍(스탬프 후) 공용
+        if mask:
+            xs = [hx + mx for mx, _ in mask]
+            ys = [hy + my for _, my in mask]
+            box = (min(xs), min(ys), max(xs), max(ys))
+            boxes.append(box)
+            if do_plaza and pid:
+                _plaza_pad(data, W, H, box, pid, pad=1)
         if street and pid:  # 문 앞 → 큰길까지 수직 진입로(폭 2)
             ax, ay = vig.door_anchor(mask)
             gx, gy = hx + ax, hy + ay
@@ -196,6 +269,10 @@ def compile_blueprint(
         vig = vignettes.get(p["vignette"])
         if vig:
             occupied |= stamp(data, W, H, vig, p["x"], p["y"], mask=vig.structural_mask())
+
+    # 4c) 건물 프레이밍 — 포장마당 바깥 잔디 링을 초목으로 감싸 공백을 줄이고 환경에 녹인다
+    if blueprint.get("frame", True) and boxes:
+        _frame_buildings(data, W, H, tid, boxes, occupied, rng)
 
     # 5) 정원(구획 한정) → 6) 나무 경계
     _plant_gardens(data, W, H, tid, blueprint.get("gardens", []), occupied, rng)
