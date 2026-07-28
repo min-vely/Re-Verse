@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field
 from agent.core.config import agent_config
 from agent.core.llm_client import invoke_llm
 from agent.generation.mapgen.blueprint import compile_blueprint
+from agent.generation.mapgen.layout import pack
 from agent.generation.mapgen.tile_renderer import render_data_to_png
 from agent.generation.mapgen.vignette import Vignette
 from agent.generation.mapgen.vignette_mine import mine_curated, mine_dir
@@ -90,54 +91,44 @@ def _by_theme_size(structs: list[Vignette], theme: str) -> dict[str, list[Vignet
 
 
 def plan_to_render(plan: MapPlan, seed: int = 7) -> tuple[list[int], int, int, int]:
-    """MapPlan → 큐레이션 vignette 로 blueprint 조립 → (data, W, H, tileset)."""
+    """MapPlan → 큐레이션 vignette 를 패킹 배치 → blueprint 컴파일 → (data, W, H, tileset).
+
+    배치는 고정 슬롯이 아니라 `layout.pack` — 각 vignette 의 실제 실루엣 크기로 자리를
+    잡고, 맵 크기도 그 내용에 맞춰 역산한다(랜드마크가 옆 건물을 덮는 문제의 근원).
+    """
     structs = mine_curated(_SAMPLEMAPS, tileset_id=2)
     decor = [v for v in mine_dir(_SAMPLEMAPS, 2, include_decor=True) if v.kind == "decor"]
 
     theme = plan.theme if plan.theme in _THEMES else "grassland"
     tiered = _by_theme_size(structs, theme)
-    # 테마에 그 등급이 없으면(눈=중/대형 없음 등) 해당 슬롯은 비운다(테마 일관성 유지).
+    # 테마에 그 등급이 없으면(눈=중/대형 없음 등) 그 등급은 건너뛴다(테마 일관성 유지).
 
-    vigs: dict[str, Vignette] = {}
-    houses: list[dict] = []
-    props: list[dict] = []
-
-    def add(key: str, vig: Vignette, x: int, y: int, bucket: list[dict]) -> None:
-        vigs[key] = vig
-        bucket.append({"vignette": key, "x": x, "y": y})
-
-    # 1) 중앙 랜드마크
-    if plan.has_landmark and tiered["large"]:
-        add("L", tiered["large"][0], 18, 3, houses)
-    # 2) 신전/중형 (좌·우 상단)
-    temple_slots = [(3, 5), (37, 6)]
-    meds = tiered["medium"]
-    for i in range(min(plan.n_temples, len(meds), len(temple_slots))):
-        add(f"M{i}", meds[i], *temple_slots[i], houses)
-    # 3) 집 (하단 열, 부족하면 순환)
-    house_slots = [(4, 16), (38, 16), (15, 16), (28, 16)]
     smalls = tiered["small"] or tiered["medium"] or tiered["large"]
-    if smalls:
-        for i in range(min(plan.n_houses, len(house_slots))):
-            add(f"S{i}", smalls[i % len(smalls)], *house_slots[i], houses)
-    # 4) 소품(석상·우물) — 길 옆
-    if plan.include_props:
-        theme_decor = [d for d in decor if d.theme == theme and 2 <= d.height <= 3 and d.width <= 3]
-        for i, (px) in enumerate([26, 32]):
-            if i < len(theme_decor):
-                add(f"P{i}", theme_decor[i], px, 22, props)
+    wish: list[Vignette] = []
+    if plan.has_landmark and tiered["large"]:
+        wish.append(tiered["large"][0])
+    wish += tiered["medium"][: plan.n_temples]
+    wish += [smalls[i % len(smalls)] for i in range(plan.n_houses)] if smalls else []
 
+    props: list[Vignette] = []
+    if plan.include_props:
+        props = [d for d in decor if d.theme == theme and 2 <= d.height <= 3 and d.width <= 3][:3]
+
+    # 빈 곳 채우기 풀은 소형에 중형·나머지 대형까지 섞는다 — 눈·사막은 라이브러리가
+    # 작아(소형 0~3채) 소형만 쓰면 같은 집이 복제된다.
+    filler = smalls + tiered["medium"] + tiered["large"][1:]
+    lay = pack(wish, filler=filler, props=props, seed=seed)
     blueprint = {
-        "size": [46, 30],
+        "size": [lay.width, lay.height],
         "tileset": 2,
         "theme": theme,
-        "street": {"y": 21, "x0": 3, "x1": 42},
-        "houses": houses,
-        "props": props,
-        "gardens": [[24, 24, 34, 28]] if theme == "grassland" else [],
+        "street": {"y": lay.street_y, "x0": 3, "x1": lay.width - 4},
+        "houses": lay.houses,
+        "props": lay.props,
+        "gardens": lay.gardens if theme == "grassland" else [],
         "tree_border": plan.tree_border,
     }
-    return compile_blueprint(blueprint, vigs, seed=seed)
+    return compile_blueprint(blueprint, lay.vignettes, seed=seed)
 
 
 async def generate_map_image(query: str, out_path: Path) -> MapPlan:

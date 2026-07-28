@@ -244,8 +244,12 @@ def compile_blueprint(
             ys = [hy + my for _, my in mask]
             box = (min(xs), min(ys), max(xs), max(ys))
             boxes.append(box)
-            if do_plaza and pid:
-                _plaza_pad(data, W, H, box, pid, pad=1)
+            if do_plaza:
+                # 마당 재질은 **그 구조물이 원본에서 딛고 있던 지형**을 우선한다(vignette.ground).
+                # 성은 흙 마당 위에, 여관은 눈길 위에 있었다 — 그 바닥을 깔아주면 건물이 자기
+                # 원래 자리처럼 앉는다. 팔레트에 없거나 정보가 없으면 테마 기본 길로 폴백.
+                apron = pal.get_tile_id(tid, vig.apron_ground or "") or pid
+                _plaza_pad(data, W, H, box, apron, pad=1)
         if street and pid:  # 문 앞 → 큰길까지 수직 진입로(폭 2)
             ax, ay = vig.door_anchor(mask)
             gx, gy = hx + ax, hy + ay
