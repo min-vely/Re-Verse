@@ -125,7 +125,9 @@ def plan_to_render(plan: MapPlan, seed: int = 7) -> tuple[list[int], int, int, i
         "street": {"y": lay.street_y, "x0": 3, "x1": lay.width - 4},
         "houses": lay.houses,
         "props": lay.props,
-        "gardens": lay.gardens if theme == "grassland" else [],
+        # 정원 구획은 테마와 무관하게 넘긴다 — 컴파일러가 테마 식생(눈=눈뭉치·전나무 등)으로
+        # 채우므로, 잔디에서만 켜면 눈·사막 맵의 빈 공간이 그대로 남는다.
+        "gardens": lay.gardens,
         "tree_border": plan.tree_border,
     }
     return compile_blueprint(blueprint, lay.vignettes, seed=seed)
